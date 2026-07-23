@@ -101,9 +101,7 @@ Future<File> _buildTdlibFromSource({
       logger?.info('Using resolved NDK: $ndkPath');
     }
 
-    final workRoot = Directory.fromUri(
-      input.outputDirectory.resolve('tdlib_work/'),
-    );
+    final workRoot = _cacheRoot('android-$abi-api$apiLevel');
     final artifactDir = Directory.fromUri(
       input.outputDirectory.resolve('artifacts/'),
     );
@@ -128,8 +126,8 @@ Future<File> _buildTdlibFromSource({
   if (os == OS.iOS) {
     final iosConfig = input.config.code.iOS;
 
-    final workRoot = Directory.fromUri(
-      input.outputDirectory.resolve('ios_work/'),
+    final workRoot = _cacheRoot(
+      'ios-${iosConfig.targetSdk.type}-v${iosConfig.targetVersion}',
     );
     final artifactDir = Directory.fromUri(
       input.outputDirectory.resolve('artifacts/'),
@@ -163,6 +161,7 @@ Future<File> _buildTdlibFromSource({
     input: input,
     libName: libName,
     sourceDir: sourceDirectory,
+    workingRoot: _cacheRoot('${os.name}-${arch.name}'),
   );
 }
 
@@ -170,18 +169,28 @@ Future<File> _buildTdlibWithCMake({
   required HookInput input,
   required String libName,
   required Directory sourceDir,
+  required Directory workingRoot,
 }) async {
-  final buildDir = Directory.fromUri(input.outputDirectory.resolve('build/'));
+  final buildDir = Directory('${workingRoot.path}/build');
   buildDir.createSync(recursive: true);
 
   Logger.root.info('Configuring TDLib with CMake in ${buildDir.path}');
-  await _run('cmake', [
+  final cmakeArgs = <String>[
     '-S',
     sourceDir.path,
     '-B',
     buildDir.path,
     '-DCMAKE_BUILD_TYPE=Release',
-  ]);
+  ];
+  final zlibRoot = Platform.environment['ZLIB_ROOT'];
+  if (zlibRoot != null && zlibRoot.isNotEmpty) {
+    cmakeArgs.addAll([
+      '-DZLIB_ROOT=$zlibRoot',
+      '-DZLIB_LIBRARY=$zlibRoot/lib/zlib.lib',
+      '-DZLIB_INCLUDE_DIR=$zlibRoot/include',
+    ]);
+  }
+  await _run('cmake', cmakeArgs);
 
   Logger.root.info('Building TDLib target tdjson');
   await _run('cmake', [
@@ -317,3 +326,7 @@ String _nativeDir(OS os, Architecture arch) => switch (os) {
   OS.windows => 'native/windows-x64',
   _ => 'native/other',
 };
+
+Directory _cacheRoot(String key) => Directory.fromUri(
+  Directory.current.uri.resolve('.dart_tool/tdlib-cmake-cache/$key'),
+);

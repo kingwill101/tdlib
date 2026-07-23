@@ -35,7 +35,8 @@ jobs:
           path: |
             .pub-cache
             .dart_tool/hooks_runner
-          key: ${{ runner.os }}-linux-x64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
+            .dart_tool/tdlib-cmake-cache
+          key: ${{ runner.os }}-linux-x64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart', 'lib/src/android_builder.dart', 'lib/src/ios_builder.dart', 'lib/src/tdlib_source.dart') }}
       - name: Install native toolchain
         run: |
           sudo apt-get update
@@ -74,7 +75,8 @@ jobs:
           path: |
             .pub-cache
             .dart_tool/hooks_runner
-          key: ${{ runner.os }}-macos-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
+            .dart_tool/tdlib-cmake-cache
+          key: ${{ runner.os }}-macos-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart', 'lib/src/android_builder.dart', 'lib/src/ios_builder.dart', 'lib/src/tdlib_source.dart') }}
       - name: Install native toolchain
         run: brew install cmake coreutils gperf
       - run: dart pub get --no-example
@@ -104,7 +106,8 @@ jobs:
           path: |
             .pub-cache
             .dart_tool/hooks_runner
-          key: ${{ runner.os }}-windows-x64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
+            .dart_tool/tdlib-cmake-cache
+          key: ${{ runner.os }}-windows-x64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart', 'lib/src/android_builder.dart', 'lib/src/ios_builder.dart', 'lib/src/tdlib_source.dart') }}
       - name: Install native toolchain
         shell: pwsh
         run: |
@@ -140,7 +143,8 @@ jobs:
           path: |
             .pub-cache
             .dart_tool/hooks_runner
-          key: ${{ runner.os }}-android-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
+            .dart_tool/tdlib-cmake-cache
+          key: ${{ runner.os }}-android-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart', 'lib/src/android_builder.dart', 'lib/src/ios_builder.dart', 'lib/src/tdlib_source.dart') }}
       - name: Install native toolchain
         run: |
           sudo apt-get update
@@ -172,7 +176,8 @@ jobs:
           path: |
             .pub-cache
             .dart_tool/hooks_runner
-          key: ${{ runner.os }}-ios-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
+            .dart_tool/tdlib-cmake-cache
+          key: ${{ runner.os }}-ios-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart', 'lib/src/android_builder.dart', 'lib/src/ios_builder.dart', 'lib/src/tdlib_source.dart') }}
       - name: Install native toolchain
         run: brew install cmake coreutils gperf
       - run: dart pub get --no-example
