@@ -38,7 +38,7 @@ jobs:
             libclang-dev \
             ninja-build \
             pkg-config
-      - run: dart pub get
+      - run: dart pub get --no-example
       - run: dart test
       - name: Stage built library
         run: |
@@ -55,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
-      - run: dart pub get
+      - run: dart pub get --no-example
       - run: dart test
       - name: Stage built library
         run: |
@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
-      - run: dart pub get
+      - run: dart pub get --no-example
       - run: dart test
       - name: Stage built library
         run: |
@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
-      - run: dart pub get
+      - run: dart pub get --no-example
       - run: dart test
       - name: Stage built library
         run: |
@@ -106,7 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
-      - run: dart pub get
+      - run: dart pub get --no-example
       - run: dart test
       - name: Stage built library
         run: |
@@ -159,7 +159,7 @@ jobs:
           cp -R downloaded/windows/. built-library/
           cp -R downloaded/android/. built-library/
           cp -R downloaded/ios/. built-library/
-      - run: dart pub get
+      - run: dart pub get --no-example
       - name: Generate manifest and release assets
         run: |
           TAG="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}"
