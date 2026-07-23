@@ -76,7 +76,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
       - name: Install native toolchain
-        run: choco install gperf -y --no-progress
+        run: choco install gperf zlib openssl.light -y --no-progress
       - run: dart pub get --no-example
       - run: dart test
       - name: Stage built library
