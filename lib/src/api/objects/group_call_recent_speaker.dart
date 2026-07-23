@@ -1,0 +1,46 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Describes a recently speaking participant in a group call
+@immutable
+final class GroupCallRecentSpeaker extends TdObject {
+  GroupCallRecentSpeaker({this.participantId, required this.isSpeaking});
+
+  /// [participantId] Group call participant identifier
+  final MessageSender? participantId;
+
+  /// [isSpeaking] True, is the user has spoken recently
+  final bool isSpeaking;
+
+  static const String constructor = 'groupCallRecentSpeaker';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'participant_id': participantId?.toJson(),
+    'is_speaking': isSpeaking,
+    '@type': constructor,
+  };
+
+  static GroupCallRecentSpeaker? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return GroupCallRecentSpeaker(
+      participantId: MessageSender.fromJson(
+        tdMapFromJson(json['participant_id']),
+      ),
+      isSpeaking: (json['is_speaking'] as bool?) ?? false,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}

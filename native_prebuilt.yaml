@@ -1,0 +1,28 @@
+schema: 1
+package: tdlib
+asset_name: src/tdlib.g.dart
+library_stem: tdjson
+release:
+  repository: kingwill101/tdlib-dart
+  tag: tdlib-v1.8.64
+artifacts:
+  android-arm64:
+    archive: tdlib-android-arm64.tar.gz
+    payload:
+      type: dynamic_library
+  linux-x64:
+    archive: tdlib-linux-x64.tar.gz
+    payload:
+      type: dynamic_library
+  windows-x64:
+    archive: tdlib-windows-x64.tar.gz
+    payload:
+      type: dynamic_library
+  macos-arm64:
+    archive: tdlib-macos-arm64.tar.gz
+    payload:
+      type: dynamic_library
+  ios-arm64:
+    archive: tdlib-ios-arm64.tar.gz
+    payload:
+      type: static_library

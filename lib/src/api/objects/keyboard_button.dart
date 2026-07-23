@@ -1,0 +1,64 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Represents a single button in a bot keyboard
+@immutable
+final class KeyboardButton extends TdObject {
+  KeyboardButton({
+    required this.text,
+    required this.iconCustomEmojiId,
+    this.style,
+    this.type,
+  });
+
+  /// [text] Text of the button
+  final String text;
+
+  /// [iconCustomEmojiId] Identifier of the custom emoji that must be shown on
+  /// the button; 0 if none
+  final int iconCustomEmojiId;
+
+  /// [style] Style of the button
+  final ButtonStyle? style;
+
+  /// [type] Type of the button
+  final KeyboardButtonType? type;
+
+  static const String constructor = 'keyboardButton';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text,
+    'icon_custom_emoji_id': iconCustomEmojiId.toString(),
+    'style': style?.toJson(),
+    'type': type?.toJson(),
+    '@type': constructor,
+  };
+
+  static KeyboardButton? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return KeyboardButton(
+      text: (json['text'] as String?) ?? '',
+      iconCustomEmojiId:
+          int.tryParse(
+            (json['icon_custom_emoji_id'] as dynamic)?.toString() ?? '',
+          ) ??
+          0,
+      style: ButtonStyle.fromJson(tdMapFromJson(json['style'])),
+      type: KeyboardButtonType.fromJson(tdMapFromJson(json['type'])),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}

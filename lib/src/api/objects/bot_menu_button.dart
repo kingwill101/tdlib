@@ -1,0 +1,46 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Describes a button to be shown instead of bot commands menu button
+@immutable
+final class BotMenuButton extends TdObject {
+  BotMenuButton({required this.text, required this.url});
+
+  /// [text] Text of the button
+  final String text;
+
+  /// [url] URL of a Web App to open when the button is pressed. If the link is
+  /// of the type internalLinkTypeWebApp, then it must be processed accordingly.
+  /// Otherwise, the link must be passed to openWebApp
+  final String url;
+
+  static const String constructor = 'botMenuButton';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text,
+    'url': url,
+    '@type': constructor,
+  };
+
+  static BotMenuButton? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return BotMenuButton(
+      text: (json['text'] as String?) ?? '',
+      url: (json['url'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}

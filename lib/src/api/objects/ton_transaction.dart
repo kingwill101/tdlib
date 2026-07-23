@@ -1,0 +1,66 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Represents a transaction changing the amount of owned Toncoins
+@immutable
+final class TonTransaction extends TdObject {
+  TonTransaction({
+    required this.id,
+    required this.tonAmount,
+    required this.isRefund,
+    required this.date,
+    this.type,
+  });
+
+  /// [id] Unique identifier of the transaction
+  final String id;
+
+  /// [tonAmount] The amount of added owned Toncoins; negative for outgoing
+  /// transactions
+  final int tonAmount;
+
+  /// [isRefund] True, if the transaction is a refund of a previous transaction
+  final bool isRefund;
+
+  /// [date] Point in time (Unix timestamp) when the transaction was completed
+  final int date;
+
+  /// [type] Type of the transaction
+  final TonTransactionType? type;
+
+  static const String constructor = 'tonTransaction';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'ton_amount': tonAmount,
+    'is_refund': isRefund,
+    'date': date,
+    'type': type?.toJson(),
+    '@type': constructor,
+  };
+
+  static TonTransaction? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return TonTransaction(
+      id: (json['id'] as String?) ?? '',
+      tonAmount: (json['ton_amount'] as int?) ?? 0,
+      isRefund: (json['is_refund'] as bool?) ?? false,
+      date: (json['date'] as int?) ?? 0,
+      type: TonTransactionType.fromJson(tdMapFromJson(json['type'])),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}

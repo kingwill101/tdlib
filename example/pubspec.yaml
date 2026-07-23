@@ -1,0 +1,14 @@
+name: example
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+  flutter: '>=1.17.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  path_provider: ^2.1.0
+  intl: ^0.20.0
+  tdlib:
+    path: ../

@@ -1,0 +1,60 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Contains information about a chat administrator
+@immutable
+final class ChatAdministrator extends TdObject {
+  ChatAdministrator({
+    required this.userId,
+    required this.customTitle,
+    required this.isOwner,
+    required this.canBeEdited,
+  });
+
+  /// [userId] User identifier of the administrator
+  final int userId;
+
+  /// [customTitle] Custom title of the administrator
+  final String customTitle;
+
+  /// [isOwner] True, if the user is the owner of the chat
+  final bool isOwner;
+
+  /// [canBeEdited] True, if the current user can edit the administrator
+  /// privileges for the administrator
+  final bool canBeEdited;
+
+  static const String constructor = 'chatAdministrator';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'user_id': userId,
+    'custom_title': customTitle,
+    'is_owner': isOwner,
+    'can_be_edited': canBeEdited,
+    '@type': constructor,
+  };
+
+  static ChatAdministrator? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return ChatAdministrator(
+      userId: (json['user_id'] as int?) ?? 0,
+      customTitle: (json['custom_title'] as String?) ?? '',
+      isOwner: (json['is_owner'] as bool?) ?? false,
+      canBeEdited: (json['can_be_edited'] as bool?) ?? false,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}

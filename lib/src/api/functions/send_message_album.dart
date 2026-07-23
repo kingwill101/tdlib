@@ -1,0 +1,61 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Sends 2-10 messages grouped together into an album. Currently, only audio,
+/// document, photo and video messages can be grouped into an album. Documents
+/// and audio files can be only grouped in an album with messages of the same
+/// type. Returns sent messages
+/// Returns [Messages]
+@immutable
+final class SendMessageAlbum extends TdFunction {
+  SendMessageAlbum({
+    required this.chatId,
+    this.topicId,
+    this.replyTo,
+    this.options,
+    required this.inputMessageContents,
+  });
+
+  /// [chatId] Target chat
+  final int chatId;
+
+  /// [topicId] Topic in which the messages will be sent; pass null if none
+  final MessageTopic? topicId;
+
+  /// [replyTo] Information about the message or story to be replied; pass null
+  /// if none
+  final InputMessageReplyTo? replyTo;
+
+  /// [options] Options to be used to send the messages; pass null to use
+  /// default options
+  final MessageSendOptions? options;
+
+  /// [inputMessageContents] Contents of messages to be sent. At most 10
+  /// messages can be added to an album. All messages must have the same value
+  /// of show_caption_above_media
+  final List<InputMessageContent> inputMessageContents;
+
+  static const String constructor = 'sendMessageAlbum';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'chat_id': chatId,
+    'topic_id': topicId?.toJson(),
+    'reply_to': replyTo?.toJson(),
+    'options': options?.toJson(),
+    'input_message_contents': inputMessageContents
+        .map((item) => item.toJson())
+        .toList(),
+    '@type': constructor,
+  };
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}

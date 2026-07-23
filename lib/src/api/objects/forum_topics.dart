@@ -1,0 +1,71 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Describes a list of forum topics
+@immutable
+final class ForumTopics extends TdObject {
+  ForumTopics({
+    required this.totalCount,
+    required this.topics,
+    required this.nextOffsetDate,
+    required this.nextOffsetMessageId,
+    required this.nextOffsetForumTopicId,
+  });
+
+  /// [totalCount] Approximate total number of forum topics found
+  final int totalCount;
+
+  /// [topics] List of forum topics
+  final List<ForumTopic> topics;
+
+  /// [nextOffsetDate] Offset date for the next getForumTopics request
+  final int nextOffsetDate;
+
+  /// [nextOffsetMessageId] Offset message identifier for the next
+  /// getForumTopics request
+  final int nextOffsetMessageId;
+
+  /// [nextOffsetForumTopicId] Offset forum topic identifier for the next
+  /// getForumTopics request
+  final int nextOffsetForumTopicId;
+
+  static const String constructor = 'forumTopics';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'total_count': totalCount,
+    'topics': topics.map((item) => item.toJson()).toList(),
+    'next_offset_date': nextOffsetDate,
+    'next_offset_message_id': nextOffsetMessageId,
+    'next_offset_forum_topic_id': nextOffsetForumTopicId,
+    '@type': constructor,
+  };
+
+  static ForumTopics? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return ForumTopics(
+      totalCount: (json['total_count'] as int?) ?? 0,
+      topics: List<ForumTopic>.from(
+        tdListFromJson(json['topics'])
+            .map((item) => ForumTopic.fromJson(tdMapFromJson(item)))
+            .whereType<ForumTopic>(),
+      ),
+      nextOffsetDate: (json['next_offset_date'] as int?) ?? 0,
+      nextOffsetMessageId: (json['next_offset_message_id'] as int?) ?? 0,
+      nextOffsetForumTopicId: (json['next_offset_forum_topic_id'] as int?) ?? 0,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}

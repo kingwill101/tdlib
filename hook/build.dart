@@ -1,0 +1,294 @@
+import 'dart:ffi';
+import 'dart:io';
+
+import 'package:code_assets/code_assets.dart';
+import 'package:hooks/hooks.dart';
+import 'package:logging/logging.dart';
+import 'package:native_prebuilt/hooks.dart';
+import 'package:tdlib/src/android_builder.dart' as android;
+import 'package:tdlib/src/hook/tdlib_prebuilts.g.dart';
+
+Future<void> main(List<String> args) async {
+  Logger.root.level = Level.INFO;
+  Logger.root.onRecord.listen((r) {
+    stderr.writeln('[tdlib] ${r.level.name}: ${r.message}');
+  });
+
+  await build(args, (input, output) async {
+    if (!input.config.buildCodeAssets) return;
+
+    final os = input.config.code.targetOS;
+    final arch = input.config.code.targetArchitecture;
+    final libName = _libName(os);
+    final buildFromSource = shouldBuildFromSource(input);
+
+    await PrebuiltCodeAssetBuilder(
+      assetName: 'src/tdlib.g.dart',
+      libraryStem: 'tdjson',
+      manifest: tdlibPrebuilts,
+      linkModeResolver: (_) => DynamicLoadingBundled(),
+      sourceFallback: SourceFallback(
+        sources: [
+          GitSource(
+            repository: Uri.parse(android.kTDLibRepo),
+            revision: android.kTDLibCommit,
+          ),
+        ],
+        builder: CallbackSourceBuilder(
+          callback: ({
+            required source,
+            required input,
+            required output,
+            required logger,
+          }) async {
+            final builtLib = await _buildTdlibFromSource(
+              input: input,
+              os: os,
+              arch: arch,
+              libName: libName,
+              sourceDirectory: source.directory,
+              logger: logger,
+            );
+            _registerTdlibAsset(input, output, builtLib);
+          },
+        ),
+      ),
+      resolvers: buildFromSource ? const <PrebuiltResolver>[] : null,
+    ).run(input: input, output: output, logger: Logger.root);
+  });
+}
+
+bool shouldBuildFromSource(HookInput input) {
+  final buildFromSource = input.userDefines['build_from_source'];
+  if (buildFromSource is! bool?) {
+    throw const FormatException(
+      'hooks.user_defines.tdlib.build_from_source must be a boolean.',
+    );
+  }
+  return buildFromSource ?? false;
+}
+
+void _registerTdlibAsset(
+  HookInput input,
+  BuildOutputBuilder output,
+  File library,
+) {
+  output.assets.code.add(
+    CodeAsset(
+      package: input.packageName,
+      name: 'src/tdlib.g.dart',
+      linkMode: DynamicLoadingBundled(),
+      file: library.uri,
+    ),
+  );
+}
+
+Future<File> _buildTdlibFromSource({
+  required HookInput input,
+  required OS os,
+  required Architecture arch,
+  required String libName,
+  required Directory sourceDirectory,
+  required Logger? logger,
+}) async {
+  if (os == OS.android) {
+    final abi = _androidAbi(arch);
+    final apiLevel = input.config.code.android.targetNdkApi;
+    final ndkPath = _resolveNdkPath(input);
+
+    logger?.info('Building for Android $abi (API $apiLevel)...');
+    if (ndkPath != null) {
+      logger?.info('Using resolved NDK: $ndkPath');
+    }
+
+    final workRoot = Directory.fromUri(input.outputDirectory.resolve('tdlib_work/'));
+    final artifactDir = Directory.fromUri(
+      input.outputDirectory.resolve('artifacts/'),
+    );
+    final outDir = await android.buildTdlibAndroid(
+      workingRoot: workRoot.path,
+      outputDirectory: artifactDir.path,
+      abi: abi,
+      apiLevel: apiLevel,
+      ndkPath: ndkPath,
+      sourceDirectory: sourceDirectory.path,
+      logger: logger,
+    );
+
+    final builtLib = File('${outDir.path}/$libName');
+    if (builtLib.existsSync()) {
+      logger?.info('Registered code asset: ${builtLib.path}');
+      return builtLib;
+    }
+    throw StateError('Build produced no output at ${builtLib.path}');
+  }
+
+  if (!_canBuildOnHost(os, arch)) {
+    throw UnsupportedError(
+      'No prebuilt TDLib library found for ${os.name}/${arch.name}, and '
+      'the TDLib hook only builds from source for the current host OS. '
+      'Provide ${_nativeDir(os, arch)}/$libName or build it outside '
+      'the hook.',
+    );
+  }
+
+  return _buildTdlibWithCMake(
+    input: input,
+    os: os,
+    arch: arch,
+    libName: libName,
+    sourceDir: sourceDirectory,
+  );
+}
+
+Future<File> _buildTdlibWithCMake({
+  required HookInput input,
+  required OS os,
+  required Architecture arch,
+  required String libName,
+  required Directory sourceDir,
+}) async {
+  final buildDir = Directory.fromUri(input.outputDirectory.resolve('build/'));
+  buildDir.createSync(recursive: true);
+
+  Logger.root.info('Configuring TDLib with CMake in ${buildDir.path}');
+  await _run('cmake', [
+    '-S',
+    sourceDir.path,
+    '-B',
+    buildDir.path,
+    '-DCMAKE_BUILD_TYPE=Release',
+  ]);
+
+  Logger.root.info('Building TDLib target tdjson');
+  await _run('cmake', [
+    '--build',
+    buildDir.path,
+    '--target',
+    'tdjson',
+    '--parallel',
+    _parallelism().toString(),
+  ]);
+
+  final builtLib = _findBuiltLibrary(buildDir, libName);
+  if (builtLib == null) {
+    throw StateError(
+      'CMake completed but $libName was not found under ${buildDir.path}',
+    );
+  }
+  return _copyToHookOutput(input, builtLib, libName);
+}
+
+String? _resolveNdkPath(HookInput input) {
+  final cCompiler = input.config.code.cCompiler;
+  if (cCompiler == null) return null;
+
+  // Compiler path: /path/to/ndk/<version>/toolchains/llvm/prebuilt/<host>/bin/clang
+  final compilerPath = cCompiler.compiler.toFilePath();
+  final toolchainsIndex = compilerPath.indexOf('/toolchains/');
+  if (toolchainsIndex > 0) {
+    return compilerPath.substring(0, toolchainsIndex);
+  }
+  return null;
+}
+
+File _copyToHookOutput(HookInput input, File builtLib, String libName) {
+  final artifactDir = Directory.fromUri(
+    input.outputDirectory.resolve('artifacts/'),
+  );
+  artifactDir.createSync(recursive: true);
+  final artifact = File('${artifactDir.path}/$libName');
+  if (builtLib.path != artifact.path) {
+    builtLib.copySync(artifact.path);
+  }
+  return artifact;
+}
+
+File? _findBuiltLibrary(Directory buildDir, String libName) {
+  if (!buildDir.existsSync()) return null;
+
+  for (final entity in buildDir.listSync(recursive: true)) {
+    if (entity is! File && entity is! Link) continue;
+    if (_fileName(entity.path).toLowerCase() == libName.toLowerCase()) {
+      return File(entity.path);
+    }
+  }
+  return null;
+}
+
+bool _canBuildOnHost(OS targetOS, Architecture targetArch) {
+  final hostOS = switch (Platform.operatingSystem) {
+    'linux' => OS.linux,
+    'macos' => OS.macOS,
+    'windows' => OS.windows,
+    _ => null,
+  };
+  return targetOS == hostOS && targetArch == _hostArchitecture();
+}
+
+Architecture? _hostArchitecture() {
+  final abi = Abi.current().toString().toLowerCase();
+  if (abi.contains('arm64')) return Architecture.arm64;
+  if (abi.contains('arm')) return Architecture.arm;
+  if (abi.contains('ia32')) return Architecture.ia32;
+  if (abi.contains('x64')) return Architecture.x64;
+  return null;
+}
+
+Future<void> _run(
+  String executable,
+  List<String> arguments, {
+  String? workingDirectory,
+}) async {
+  final result = await Process.run(
+    executable,
+    arguments,
+    workingDirectory: workingDirectory,
+    runInShell: Platform.isWindows,
+  );
+  if (result.exitCode != 0) {
+    throw ProcessException(
+      executable,
+      arguments,
+      'Command failed with exit code ${result.exitCode}\n'
+      'stdout:\n${result.stdout}\n'
+      'stderr:\n${result.stderr}',
+      result.exitCode,
+    );
+  }
+}
+
+int _parallelism() =>
+    Platform.numberOfProcessors <= 1 ? 1 : Platform.numberOfProcessors - 1;
+
+String _fileName(String path) {
+  final normalized = path.replaceAll(r'\', '/');
+  final separator = normalized.lastIndexOf('/');
+  return separator == -1 ? normalized : normalized.substring(separator + 1);
+}
+
+String _androidAbi(Architecture arch) => switch (arch) {
+  Architecture.arm64 => 'arm64-v8a',
+  Architecture.arm => 'armeabi-v7a',
+  Architecture.x64 => 'x86_64',
+  Architecture.ia32 => 'x86',
+  _ => throw ArgumentError('Unsupported Android arch: $arch'),
+};
+
+String _libName(OS os) => switch (os) {
+  OS.android => 'libtdjson.so',
+  OS.linux => 'libtdjson.so',
+  OS.macOS || OS.iOS => 'libtdjson.dylib',
+  OS.windows => 'tdjson.dll',
+  _ => 'libtdjson.so',
+};
+
+String _nativeDir(OS os, Architecture arch) => switch (os) {
+  OS.android => 'native/android/${_androidAbi(arch)}',
+  OS.iOS => 'native/ios',
+  OS.linux => 'native/linux-x64',
+  OS.macOS =>
+    arch == Architecture.arm64 ? 'native/macos-arm64' : 'native/macos-x64',
+  OS.windows => 'native/windows-x64',
+  _ => 'native/other',
+};

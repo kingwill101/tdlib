@@ -1,0 +1,58 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Contains a list of messages found by a search
+@immutable
+final class FoundMessages extends TdObject {
+  FoundMessages({
+    required this.totalCount,
+    required this.messages,
+    required this.nextOffset,
+  });
+
+  /// [totalCount] Approximate total number of messages found; -1 if unknown
+  final int totalCount;
+
+  /// [messages] List of messages
+  final List<Message> messages;
+
+  /// [nextOffset] The offset for the next request. If empty, then there are no
+  /// more results
+  final String nextOffset;
+
+  static const String constructor = 'foundMessages';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'total_count': totalCount,
+    'messages': messages.map((item) => item.toJson()).toList(),
+    'next_offset': nextOffset,
+    '@type': constructor,
+  };
+
+  static FoundMessages? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return FoundMessages(
+      totalCount: (json['total_count'] as int?) ?? 0,
+      messages: List<Message>.from(
+        tdListFromJson(json['messages'])
+            .map((item) => Message.fromJson(tdMapFromJson(item)))
+            .whereType<Message>(),
+      ),
+      nextOffset: (json['next_offset'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}

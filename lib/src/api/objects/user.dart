@@ -1,0 +1,238 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Represents a user
+@immutable
+final class User extends TdObject {
+  User({
+    required this.id,
+    required this.firstName,
+    required this.lastName,
+    this.usernames,
+    required this.phoneNumber,
+    this.status,
+    this.profilePhoto,
+    required this.accentColorId,
+    required this.backgroundCustomEmojiId,
+    this.upgradedGiftColors,
+    required this.profileAccentColorId,
+    required this.profileBackgroundCustomEmojiId,
+    this.emojiStatus,
+    required this.isContact,
+    required this.isMutualContact,
+    required this.isCloseFriend,
+    this.verificationStatus,
+    required this.isPremium,
+    required this.isSupport,
+    this.restrictionInfo,
+    this.activeStoryState,
+    required this.restrictsNewChats,
+    required this.paidMessageStarCount,
+    required this.haveAccess,
+    this.type,
+    required this.languageCode,
+    required this.addedToAttachmentMenu,
+  });
+
+  /// [id] User identifier
+  final int id;
+
+  /// [firstName] First name of the user
+  final String firstName;
+
+  /// [lastName] Last name of the user
+  final String lastName;
+
+  /// [usernames] Usernames of the user; may be null
+  final Usernames? usernames;
+
+  /// [phoneNumber] Phone number of the user
+  final String phoneNumber;
+
+  /// [status] Current online status of the user
+  final UserStatus? status;
+
+  /// [profilePhoto] Profile photo of the user; may be null
+  final ProfilePhoto? profilePhoto;
+
+  /// [accentColorId] Identifier of the accent color for name, and backgrounds
+  /// of profile photo, reply header, and link preview
+  final int accentColorId;
+
+  /// [backgroundCustomEmojiId] Identifier of a custom emoji to be shown on the
+  /// reply header and link preview background; 0 if none
+  final int backgroundCustomEmojiId;
+
+  /// [upgradedGiftColors] Color scheme based on an upgraded gift to be used for
+  /// the user instead of accent_color_id and background_custom_emoji_id; may be
+  /// null if none
+  final UpgradedGiftColors? upgradedGiftColors;
+
+  /// [profileAccentColorId] Identifier of the accent color for the user's
+  /// profile; -1 if none
+  final int profileAccentColorId;
+
+  /// [profileBackgroundCustomEmojiId] Identifier of a custom emoji to be shown
+  /// on the background of the user's profile; 0 if none
+  final int profileBackgroundCustomEmojiId;
+
+  /// [emojiStatus] Emoji status to be shown instead of the default Telegram
+  /// Premium badge; may be null
+  final EmojiStatus? emojiStatus;
+
+  /// [isContact] The user is a contact of the current user
+  final bool isContact;
+
+  /// [isMutualContact] The user is a contact of the current user and the
+  /// current user is a contact of the user
+  final bool isMutualContact;
+
+  /// [isCloseFriend] The user is a close friend of the current user; implies
+  /// that the user is a contact
+  final bool isCloseFriend;
+
+  /// [verificationStatus] Information about verification status of the user;
+  /// may be null if none
+  final VerificationStatus? verificationStatus;
+
+  /// [isPremium] True, if the user is a Telegram Premium user
+  final bool isPremium;
+
+  /// [isSupport] True, if the user is Telegram support account
+  final bool isSupport;
+
+  /// [restrictionInfo] Information about restrictions that must be applied to
+  /// the corresponding private chat; may be null if none
+  final RestrictionInfo? restrictionInfo;
+
+  /// [activeStoryState] State of active stories of the user; may be null if the
+  /// user has no active stories
+  final ActiveStoryState? activeStoryState;
+
+  /// [restrictsNewChats] True, if the user may restrict new chats with
+  /// non-contacts. Use canSendMessageToUser to check whether the current user
+  /// can message the user or try to create a chat with them
+  final bool restrictsNewChats;
+
+  /// [paidMessageStarCount] Number of Telegram Stars that must be paid by
+  /// general user for each sent message to the user. If positive and
+  /// userFullInfo is unknown, use canSendMessageToUser to check whether the
+  /// current user must pay
+  final int paidMessageStarCount;
+
+  /// [haveAccess] If false, the user is inaccessible, and the only information
+  /// known about the user is inside this class. Identifier of the user can't be
+  /// passed to any method
+  final bool haveAccess;
+
+  /// [type] Type of the user
+  final UserType? type;
+
+  /// [languageCode] IETF language tag of the user's language; only available to
+  /// bots
+  final String languageCode;
+
+  /// [addedToAttachmentMenu] True, if the user added the current bot to
+  /// attachment menu; only available to bots
+  final bool addedToAttachmentMenu;
+
+  static const String constructor = 'user';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'first_name': firstName,
+    'last_name': lastName,
+    'usernames': usernames?.toJson(),
+    'phone_number': phoneNumber,
+    'status': status?.toJson(),
+    'profile_photo': profilePhoto?.toJson(),
+    'accent_color_id': accentColorId,
+    'background_custom_emoji_id': backgroundCustomEmojiId.toString(),
+    'upgraded_gift_colors': upgradedGiftColors?.toJson(),
+    'profile_accent_color_id': profileAccentColorId,
+    'profile_background_custom_emoji_id': profileBackgroundCustomEmojiId
+        .toString(),
+    'emoji_status': emojiStatus?.toJson(),
+    'is_contact': isContact,
+    'is_mutual_contact': isMutualContact,
+    'is_close_friend': isCloseFriend,
+    'verification_status': verificationStatus?.toJson(),
+    'is_premium': isPremium,
+    'is_support': isSupport,
+    'restriction_info': restrictionInfo?.toJson(),
+    'active_story_state': activeStoryState?.toJson(),
+    'restricts_new_chats': restrictsNewChats,
+    'paid_message_star_count': paidMessageStarCount,
+    'have_access': haveAccess,
+    'type': type?.toJson(),
+    'language_code': languageCode,
+    'added_to_attachment_menu': addedToAttachmentMenu,
+    '@type': constructor,
+  };
+
+  static User? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return User(
+      id: (json['id'] as int?) ?? 0,
+      firstName: (json['first_name'] as String?) ?? '',
+      lastName: (json['last_name'] as String?) ?? '',
+      usernames: Usernames.fromJson(tdMapFromJson(json['usernames'])),
+      phoneNumber: (json['phone_number'] as String?) ?? '',
+      status: UserStatus.fromJson(tdMapFromJson(json['status'])),
+      profilePhoto: ProfilePhoto.fromJson(tdMapFromJson(json['profile_photo'])),
+      accentColorId: (json['accent_color_id'] as int?) ?? 0,
+      backgroundCustomEmojiId:
+          int.tryParse(
+            (json['background_custom_emoji_id'] as dynamic)?.toString() ?? '',
+          ) ??
+          0,
+      upgradedGiftColors: UpgradedGiftColors.fromJson(
+        tdMapFromJson(json['upgraded_gift_colors']),
+      ),
+      profileAccentColorId: (json['profile_accent_color_id'] as int?) ?? 0,
+      profileBackgroundCustomEmojiId:
+          int.tryParse(
+            (json['profile_background_custom_emoji_id'] as dynamic)
+                    ?.toString() ??
+                '',
+          ) ??
+          0,
+      emojiStatus: EmojiStatus.fromJson(tdMapFromJson(json['emoji_status'])),
+      isContact: (json['is_contact'] as bool?) ?? false,
+      isMutualContact: (json['is_mutual_contact'] as bool?) ?? false,
+      isCloseFriend: (json['is_close_friend'] as bool?) ?? false,
+      verificationStatus: VerificationStatus.fromJson(
+        tdMapFromJson(json['verification_status']),
+      ),
+      isPremium: (json['is_premium'] as bool?) ?? false,
+      isSupport: (json['is_support'] as bool?) ?? false,
+      restrictionInfo: RestrictionInfo.fromJson(
+        tdMapFromJson(json['restriction_info']),
+      ),
+      activeStoryState: ActiveStoryState.fromJson(
+        tdMapFromJson(json['active_story_state']),
+      ),
+      restrictsNewChats: (json['restricts_new_chats'] as bool?) ?? false,
+      paidMessageStarCount: (json['paid_message_star_count'] as int?) ?? 0,
+      haveAccess: (json['have_access'] as bool?) ?? false,
+      type: UserType.fromJson(tdMapFromJson(json['type'])),
+      languageCode: (json['language_code'] as String?) ?? '',
+      addedToAttachmentMenu:
+          (json['added_to_attachment_menu'] as bool?) ?? false,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}

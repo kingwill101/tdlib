@@ -1,0 +1,31 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Returns the Telegram Star amount owned by a business account; for bots
+/// only
+/// Returns [StarAmount]
+@immutable
+final class GetBusinessAccountStarAmount extends TdFunction {
+  GetBusinessAccountStarAmount({required this.businessConnectionId});
+
+  /// [businessConnectionId] Unique identifier of business connection
+  final String businessConnectionId;
+
+  static const String constructor = 'getBusinessAccountStarAmount';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'business_connection_id': businessConnectionId,
+    '@type': constructor,
+  };
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}

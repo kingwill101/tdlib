@@ -1,0 +1,27 @@
+import 'package:meta/meta.dart';
+import '../extensions/data_class_extensions.dart';
+import '../tdapi.dart';
+
+/// Returns the current authorization state. This is an offline method. For
+/// informational purposes only. Use updateAuthorizationState instead to
+/// maintain the current authorization state. Can be called before
+/// initialization
+/// Returns [AuthorizationState]
+@immutable
+final class GetAuthorizationState extends TdFunction {
+  const GetAuthorizationState();
+
+  static const String constructor = 'getAuthorizationState';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{'@type': constructor};
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
