@@ -106,7 +106,13 @@ jobs:
             .dart_tool/hooks_runner
           key: ${{ runner.os }}-windows-x64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
       - name: Install native toolchain
-        run: choco install gperf zlib openssl.light -y --no-progress
+        shell: pwsh
+        run: |
+          choco install gperf openssl.light -y --no-progress
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git "$env:GITHUB_WORKSPACE\vcpkg"
+          & "$env:GITHUB_WORKSPACE\vcpkg\bootstrap-vcpkg.bat" -disableMetrics
+          & "$env:GITHUB_WORKSPACE\vcpkg\vcpkg.exe" install zlib:x64-windows
+          "ZLIB_ROOT=$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Append
       - run: dart pub get --no-example
       - name: Prebuild native assets
         if: steps.hooks-cache.outputs.cache-hit != 'true'
