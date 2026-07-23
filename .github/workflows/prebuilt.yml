@@ -35,6 +35,7 @@ jobs:
             build-essential \
             clang \
             cmake \
+            gperf \
             libclang-dev \
             ninja-build \
             pkg-config
@@ -55,6 +56,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+      - name: Install native toolchain
+        run: brew install gperf
       - run: dart pub get --no-example
       - run: dart test
       - name: Stage built library
@@ -72,6 +75,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+      - name: Install native toolchain
+        run: choco install gperf -y --no-progress
       - run: dart pub get --no-example
       - run: dart test
       - name: Stage built library
@@ -89,6 +94,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+      - name: Install native toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gperf
       - run: dart pub get --no-example
       - run: dart test
       - name: Stage built library
@@ -106,6 +115,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+      - name: Install native toolchain
+        run: brew install gperf
       - run: dart pub get --no-example
       - run: dart test
       - name: Stage built library

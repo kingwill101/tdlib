@@ -21,5 +21,5 @@ dev_dependencies:
   native_prebuilt:
     git:
       url: https://github.com/kingwill101/native_prebuilt.git
-      ref: 2c1bef6
+      ref: fix/windows-source-workdir-path
   test: ^1.31.0
