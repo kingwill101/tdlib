@@ -159,6 +159,7 @@ Future<File> _buildTdlibFromSource({
 
   return _buildTdlibWithCMake(
     input: input,
+    targetOS: os,
     libName: libName,
     sourceDir: sourceDirectory,
     workingRoot: _cacheRoot('${os.name}-${arch.name}'),
@@ -167,6 +168,7 @@ Future<File> _buildTdlibFromSource({
 
 Future<File> _buildTdlibWithCMake({
   required HookInput input,
+  required OS targetOS,
   required String libName,
   required Directory sourceDir,
   required Directory workingRoot,
@@ -182,12 +184,17 @@ Future<File> _buildTdlibWithCMake({
     buildDir.path,
     '-DCMAKE_BUILD_TYPE=Release',
   ];
-  final zlibRoot = Platform.environment['ZLIB_ROOT'];
-  if (zlibRoot != null && zlibRoot.isNotEmpty) {
+  if (targetOS == OS.windows) {
+    final vcpkgRoot = Platform.environment['VCPKG_ROOT'];
+    if (vcpkgRoot == null || vcpkgRoot.isEmpty) {
+      throw UnsupportedError(
+        'Windows source builds require VCPKG_ROOT to be set and vcpkg to be installed.',
+      );
+    }
     cmakeArgs.addAll([
-      '-DZLIB_ROOT=$zlibRoot',
-      '-DZLIB_LIBRARY=$zlibRoot/lib/zlib.lib',
-      '-DZLIB_INCLUDE_DIR=$zlibRoot/include',
+      '-DCMAKE_TOOLCHAIN_FILE=$vcpkgRoot/scripts/buildsystems/vcpkg.cmake',
+      '-DVCPKG_TARGET_TRIPLET=${Platform.environment['VCPKG_TARGET_TRIPLET'] ?? 'x64-windows'}',
+      '-DVCPKG_INSTALLED_DIR=${workingRoot.path}/vcpkg_installed',
     ]);
   }
   await _run('cmake', cmakeArgs);

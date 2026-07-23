@@ -111,11 +111,16 @@ jobs:
       - name: Install native toolchain
         shell: pwsh
         run: |
-          choco install gperf openssl.light -y --no-progress
-          git clone --depth 1 https://github.com/microsoft/vcpkg.git "$env:GITHUB_WORKSPACE\vcpkg"
-          & "$env:GITHUB_WORKSPACE\vcpkg\bootstrap-vcpkg.bat" -disableMetrics
-          & "$env:GITHUB_WORKSPACE\vcpkg\vcpkg.exe" install zlib:x64-windows
-          "ZLIB_ROOT=$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Append
+          choco install gperf -y --no-progress
+          $vcpkgRoot = "$env:GITHUB_WORKSPACE\vcpkg"
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git $vcpkgRoot
+          & "$vcpkgRoot\bootstrap-vcpkg.bat" -disableMetrics
+          $vcpkgInstalled = "$env:GITHUB_WORKSPACE\.dart_tool\tdlib-cmake-cache\windows-x64\vcpkg_installed"
+          New-Item -ItemType Directory -Force -Path $vcpkgInstalled | Out-Null
+          & "$vcpkgRoot\vcpkg.exe" install zlib:x64-windows openssl:x64-windows --x-install-root $vcpkgInstalled
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "VCPKG_TARGET_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "VCPKG_INSTALLED_DIR=$vcpkgInstalled" | Out-File -FilePath $env:GITHUB_ENV -Append
       - run: dart pub get --no-example
       - name: Prebuild native assets
         if: steps.hooks-cache.outputs.cache-hit != 'true'
