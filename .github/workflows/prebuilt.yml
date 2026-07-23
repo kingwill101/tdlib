@@ -51,7 +51,7 @@ jobs:
       - name: Prebuild native assets
         if: steps.hooks-cache.outputs.cache-hit != 'true'
         run: dart run tool/preseed_hooks.dart --target-os linux --target-arch x64
-      - run: dart test --no-pub
+      - run: dart test
       - name: Stage built library
         run: |
           mkdir -p built-library
@@ -76,12 +76,12 @@ jobs:
             .dart_tool/hooks_runner
           key: ${{ runner.os }}-macos-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
       - name: Install native toolchain
-        run: brew install gperf
+        run: brew install cmake coreutils gperf
       - run: dart pub get --no-example
       - name: Prebuild native assets
         if: steps.hooks-cache.outputs.cache-hit != 'true'
         run: dart run tool/preseed_hooks.dart --target-os macos --target-arch arm64
-      - run: dart test --no-pub
+      - run: dart test
       - name: Stage built library
         run: |
           mkdir -p built-library
@@ -117,7 +117,7 @@ jobs:
       - name: Prebuild native assets
         if: steps.hooks-cache.outputs.cache-hit != 'true'
         run: dart run tool/preseed_hooks.dart --target-os windows --target-arch x64
-      - run: dart test --no-pub
+      - run: dart test
       - name: Stage built library
         run: |
           New-Item -ItemType Directory -Force -Path built-library | Out-Null
@@ -149,7 +149,7 @@ jobs:
       - name: Prebuild native assets
         if: steps.hooks-cache.outputs.cache-hit != 'true'
         run: dart run tool/preseed_hooks.dart --target-os android --target-arch arm64
-      - run: dart test --no-pub
+      - run: dart test
       - name: Stage built library
         run: |
           mkdir -p built-library
@@ -174,12 +174,12 @@ jobs:
             .dart_tool/hooks_runner
           key: ${{ runner.os }}-ios-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
       - name: Install native toolchain
-        run: brew install gperf
+        run: brew install cmake coreutils gperf
       - run: dart pub get --no-example
       - name: Prebuild native assets
         if: steps.hooks-cache.outputs.cache-hit != 'true'
         run: dart run tool/preseed_hooks.dart --target-os ios --target-arch arm64 --ios-sdk iphoneos
-      - run: dart test --no-pub
+      - run: dart test
       - name: Stage built library
         run: |
           mkdir -p built-library

@@ -6,12 +6,14 @@ import 'package:hooks/hooks.dart';
 import 'package:logging/logging.dart';
 import 'package:native_prebuilt/hooks.dart';
 import 'package:tdlib/src/android_builder.dart' as android;
+import 'package:tdlib/src/ios_builder.dart' as ios;
+import 'package:tdlib/src/tdlib_source.dart';
 import 'package:tdlib/src/hook/tdlib_prebuilts.g.dart';
 
 Future<void> main(List<String> args) async {
   Logger.root.level = Level.INFO;
-  Logger.root.onRecord.listen((r) {
-    stderr.writeln('[tdlib] ${r.level.name}: ${r.message}');
+  Logger.root.onRecord.listen((record) {
+    stderr.writeln('[tdlib] ${record.level.name}: ${record.message}');
   });
 
   await build(args, (input, output) async {
@@ -29,28 +31,26 @@ Future<void> main(List<String> args) async {
       linkModeResolver: (_) => DynamicLoadingBundled(),
       sourceFallback: SourceFallback(
         sources: [
-          GitSource(
-            repository: Uri.parse(android.kTDLibRepo),
-            revision: android.kTDLibCommit,
-          ),
+          GitSource(repository: Uri.parse(kTDLibRepo), revision: kTDLibCommit),
         ],
         builder: CallbackSourceBuilder(
-          callback: ({
-            required source,
-            required input,
-            required output,
-            required logger,
-          }) async {
-            final builtLib = await _buildTdlibFromSource(
-              input: input,
-              os: os,
-              arch: arch,
-              libName: libName,
-              sourceDirectory: source.directory,
-              logger: logger,
-            );
-            _registerTdlibAsset(input, output, builtLib);
-          },
+          callback:
+              ({
+                required source,
+                required input,
+                required output,
+                required logger,
+              }) async {
+                final builtLib = await _buildTdlibFromSource(
+                  input: input,
+                  os: os,
+                  arch: arch,
+                  libName: libName,
+                  sourceDirectory: source.directory,
+                  logger: logger,
+                );
+                _registerTdlibAsset(input, output, builtLib);
+              },
         ),
       ),
       resolvers: buildFromSource ? const <PrebuiltResolver>[] : null,
@@ -101,7 +101,9 @@ Future<File> _buildTdlibFromSource({
       logger?.info('Using resolved NDK: $ndkPath');
     }
 
-    final workRoot = Directory.fromUri(input.outputDirectory.resolve('tdlib_work/'));
+    final workRoot = Directory.fromUri(
+      input.outputDirectory.resolve('tdlib_work/'),
+    );
     final artifactDir = Directory.fromUri(
       input.outputDirectory.resolve('artifacts/'),
     );
@@ -123,19 +125,42 @@ Future<File> _buildTdlibFromSource({
     throw StateError('Build produced no output at ${builtLib.path}');
   }
 
+  if (os == OS.iOS) {
+    final iosConfig = input.config.code.iOS;
+
+    final workRoot = Directory.fromUri(
+      input.outputDirectory.resolve('ios_work/'),
+    );
+    final artifactDir = Directory.fromUri(
+      input.outputDirectory.resolve('artifacts/'),
+    );
+    final outDir = await ios.buildTdlibIos(
+      workingRoot: workRoot.path,
+      outputDirectory: artifactDir.path,
+      sourceDirectory: sourceDirectory.path,
+      targetSdk: iosConfig.targetSdk,
+      targetVersion: iosConfig.targetVersion,
+      logger: logger,
+    );
+
+    final builtLib = File('${outDir.path}/$libName');
+    if (builtLib.existsSync()) {
+      logger?.info('Registered code asset: ${builtLib.path}');
+      return builtLib;
+    }
+    throw StateError('Build produced no output at ${builtLib.path}');
+  }
+
   if (!_canBuildOnHost(os, arch)) {
     throw UnsupportedError(
       'No prebuilt TDLib library found for ${os.name}/${arch.name}, and '
-      'the TDLib hook only builds from source for the current host OS. '
-      'Provide ${_nativeDir(os, arch)}/$libName or build it outside '
-      'the hook.',
+      'the TDLib hook only builds from source for supported host targets. '
+      'Provide ${_nativeDir(os, arch)}/$libName or build it outside the hook.',
     );
   }
 
   return _buildTdlibWithCMake(
     input: input,
-    os: os,
-    arch: arch,
     libName: libName,
     sourceDir: sourceDirectory,
   );
@@ -143,8 +168,6 @@ Future<File> _buildTdlibFromSource({
 
 Future<File> _buildTdlibWithCMake({
   required HookInput input,
-  required OS os,
-  required Architecture arch,
   required String libName,
   required Directory sourceDir,
 }) async {
@@ -183,7 +206,6 @@ String? _resolveNdkPath(HookInput input) {
   final cCompiler = input.config.code.cCompiler;
   if (cCompiler == null) return null;
 
-  // Compiler path: /path/to/ndk/<version>/toolchains/llvm/prebuilt/<host>/bin/clang
   final compilerPath = cCompiler.compiler.toFilePath();
   final toolchainsIndex = compilerPath.indexOf('/toolchains/');
   if (toolchainsIndex > 0) {
@@ -223,6 +245,9 @@ bool _canBuildOnHost(OS targetOS, Architecture targetArch) {
     'windows' => OS.windows,
     _ => null,
   };
+  if (targetOS == OS.iOS) {
+    return hostOS == OS.macOS;
+  }
   return targetOS == hostOS && targetArch == _hostArchitecture();
 }
 
