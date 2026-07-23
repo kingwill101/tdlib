@@ -28,6 +28,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+      - name: Cache hook outputs and pub cache
+        id: hooks-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool/hooks_runner
+          key: ${{ runner.os }}-linux-x64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
       - name: Install native toolchain
         run: |
           sudo apt-get update
@@ -40,7 +48,10 @@ jobs:
             ninja-build \
             pkg-config
       - run: dart pub get --no-example
-      - run: dart test
+      - name: Prebuild native assets
+        if: steps.hooks-cache.outputs.cache-hit != 'true'
+        run: dart run tool/preseed_hooks.dart --target-os linux --target-arch x64
+      - run: dart test --no-pub
       - name: Stage built library
         run: |
           mkdir -p built-library
@@ -56,10 +67,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+      - name: Cache hook outputs and pub cache
+        id: hooks-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool/hooks_runner
+          key: ${{ runner.os }}-macos-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
       - name: Install native toolchain
         run: brew install gperf
       - run: dart pub get --no-example
-      - run: dart test
+      - name: Prebuild native assets
+        if: steps.hooks-cache.outputs.cache-hit != 'true'
+        run: dart run tool/preseed_hooks.dart --target-os macos --target-arch arm64
+      - run: dart test --no-pub
       - name: Stage built library
         run: |
           mkdir -p built-library
@@ -75,10 +97,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+      - name: Cache hook outputs and pub cache
+        id: hooks-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool/hooks_runner
+          key: ${{ runner.os }}-windows-x64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
       - name: Install native toolchain
         run: choco install gperf zlib openssl.light -y --no-progress
       - run: dart pub get --no-example
-      - run: dart test
+      - name: Prebuild native assets
+        if: steps.hooks-cache.outputs.cache-hit != 'true'
+        run: dart run tool/preseed_hooks.dart --target-os windows --target-arch x64
+      - run: dart test --no-pub
       - name: Stage built library
         run: |
           New-Item -ItemType Directory -Force -Path built-library | Out-Null
@@ -94,12 +127,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+      - name: Cache hook outputs and pub cache
+        id: hooks-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool/hooks_runner
+          key: ${{ runner.os }}-android-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
       - name: Install native toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends gperf
       - run: dart pub get --no-example
-      - run: dart test
+      - name: Prebuild native assets
+        if: steps.hooks-cache.outputs.cache-hit != 'true'
+        run: dart run tool/preseed_hooks.dart --target-os android --target-arch arm64
+      - run: dart test --no-pub
       - name: Stage built library
         run: |
           mkdir -p built-library
@@ -115,10 +159,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+      - name: Cache hook outputs and pub cache
+        id: hooks-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool/hooks_runner
+          key: ${{ runner.os }}-ios-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart') }}
       - name: Install native toolchain
         run: brew install gperf
       - run: dart pub get --no-example
-      - run: dart test
+      - name: Prebuild native assets
+        if: steps.hooks-cache.outputs.cache-hit != 'true'
+        run: dart run tool/preseed_hooks.dart --target-os ios --target-arch arm64 --ios-sdk iphoneos
+      - run: dart test --no-pub
       - name: Stage built library
         run: |
           mkdir -p built-library
