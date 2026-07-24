@@ -2,8 +2,6 @@ name: Prebuilt
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'tdlib-v*'
   pull_request:
@@ -322,18 +320,42 @@ jobs:
       - name: Resolve Dart dependencies
         run: dart pub get
 
-      - name: Build and test
-        run: dart test
+      - name: Build Android arm64
+        run: |
+          dart run tool/preseed_hooks.dart \
+            --target-os android \
+            --target-arch arm64 \
+            --android-ndk-api 30 \
+            --build-from-source
 
       - name: Show compiler cache statistics
         if: always()
         run: "${SCCACHE_PATH} --show-stats"
 
-      - name: Stage built library
+      - name: Stage Android library
+        shell: bash
         run: |
+          set -euo pipefail
+
           rm -rf built-library
           mkdir -p built-library
-          cp -R .dart_tool/lib/. built-library/
+
+          ANDROID_LIBRARY="$(
+            find .dart_tool/hooks_runner/shared/tdlib \
+              -type f \
+              -path '*/artifacts/libtdjson.so' \
+              -print \
+              -quit
+          )"
+
+          if [[ -z "$ANDROID_LIBRARY" ]]; then
+            echo "No Android libtdjson.so was produced"
+            find .dart_tool -type f -name 'libtdjson*' -print
+            exit 1
+          fi
+
+          cp "$ANDROID_LIBRARY" built-library/libtdjson.so
+          file built-library/libtdjson.so
 
       - uses: actions/upload-artifact@v4
         with:
@@ -375,18 +397,44 @@ jobs:
       - name: Resolve Dart dependencies
         run: dart pub get
 
-      - name: Build and test
-        run: dart test
+      - name: Build iOS arm64
+        run: |
+          dart run tool/preseed_hooks.dart \
+            --target-os ios \
+            --target-arch arm64 \
+            --ios-sdk iphoneos \
+            --ios-version 17 \
+            --build-from-source
 
       - name: Show compiler cache statistics
         if: always()
         run: "${SCCACHE_PATH} --show-stats"
 
-      - name: Stage built library
+      - name: Stage iOS library
+        shell: bash
         run: |
+          set -euo pipefail
+
           rm -rf built-library
           mkdir -p built-library
-          cp -R .dart_tool/lib/. built-library/
+
+          IOS_LIBRARY="$(
+            find .dart_tool/hooks_runner/shared/tdlib \
+              -type f \
+              -path '*/artifacts/libtdjson.dylib' \
+              -print \
+              -quit
+          )"
+
+          if [[ -z "$IOS_LIBRARY" ]]; then
+            echo "No iOS libtdjson.dylib was produced"
+            find .dart_tool -type f -name 'libtdjson*' -print
+            exit 1
+          fi
+
+          cp "$IOS_LIBRARY" built-library/libtdjson.dylib
+
+          xcrun vtool -show-build built-library/libtdjson.dylib
 
       - uses: actions/upload-artifact@v4
         with:
@@ -424,38 +472,30 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: linux-built-library
-          path: downloaded/linux/
+          path: built-library/linux-x64/
 
       - uses: actions/download-artifact@v4
         with:
           name: macos-built-library
-          path: downloaded/macos/
+          path: built-library/macos-arm64/
 
       - uses: actions/download-artifact@v4
         with:
           name: windows-built-library
-          path: downloaded/windows/
+          path: built-library/windows-x64/
 
       - uses: actions/download-artifact@v4
         with:
           name: android-built-library
-          path: downloaded/android/
+          path: built-library/android-arm64/
 
       - uses: actions/download-artifact@v4
         with:
           name: ios-built-library
-          path: downloaded/ios/
+          path: built-library/ios-arm64/
 
-      - name: Merge built libraries
-        run: |
-          rm -rf built-library release-assets
-          mkdir -p built-library release-assets
-
-          cp -R downloaded/linux/. built-library/
-          cp -R downloaded/macos/. built-library/
-          cp -R downloaded/windows/. built-library/
-          cp -R downloaded/android/. built-library/
-          cp -R downloaded/ios/. built-library/
+      - name: Create release-assets directory
+        run: mkdir -p release-assets
 
       - name: Resolve Dart dependencies
         run: dart pub get

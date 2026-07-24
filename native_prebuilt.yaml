@@ -25,4 +25,4 @@ artifacts:
   ios-arm64:
     archive: tdlib-ios-arm64.tar.gz
     payload:
-      type: static_library
+      type: dynamic_library
