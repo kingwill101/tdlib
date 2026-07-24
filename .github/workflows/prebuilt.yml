@@ -22,21 +22,36 @@ env:
   CONFIG: native_prebuilt.yaml
   MANIFEST_OUTPUT: lib/src/hook/tdlib_prebuilts.g.dart
 
+  # Enable sccache's GitHub Actions storage backend.
+  SCCACHE_GHA_ENABLED: "true"
+
+  # Change this value whenever you intentionally want to clear all
+  # previously cached C/C++ compilation results.
+  SCCACHE_GHA_VERSION: "tdlib-v1"
+
+  # CMake reads these when configuring a new build directory.
+  CMAKE_C_COMPILER_LAUNCHER: sccache
+  CMAKE_CXX_COMPILER_LAUNCHER: sccache
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: dart-lang/setup-dart@v1
-      - name: Cache hook outputs and pub cache
-        id: hooks-cache
+
+      - name: Restore Dart package cache
         uses: actions/cache@v4
         with:
-          path: |
-            .pub-cache
-            .dart_tool/hooks_runner
-            .dart_tool/tdlib-cmake-cache
-          key: ${{ runner.os }}-linux-x64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart', 'lib/src/android_builder.dart', 'lib/src/ios_builder.dart', 'lib/src/tdlib_source.dart') }}
+          path: ${{ env.PUB_CACHE }}
+          key: >-
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+            ${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+
       - name: Install native toolchain
         run: |
           sudo apt-get update
@@ -44,195 +59,305 @@ jobs:
             build-essential \
             clang \
             cmake \
-            gperf \
             libclang-dev \
             ninja-build \
             pkg-config
-      - run: dart pub get --no-example
-      - name: Prebuild native assets
-        if: steps.hooks-cache.outputs.cache-hit != 'true'
-        run: dart run tool/preseed_hooks.dart --target-os linux --target-arch x64
-      - run: dart test
-      - name: Stage built library
-        if: always()
+
+      - name: Configure C/C++ compiler cache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
+      - name: Verify native build tools
         run: |
-          if [ -d .dart_tool/lib ]; then
-            mkdir -p built-library
-            cp -R .dart_tool/lib/. built-library/
-          else
-            echo 'No built library to stage'
-          fi
-      - uses: actions/upload-artifact@v4
+          cmake --version
+          ninja --version
+          "${SCCACHE_PATH}" --version
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Build and test
+        run: dart test
+
+      - name: Show compiler cache statistics
         if: always()
+        run: "${SCCACHE_PATH} --show-stats"
+
+      - name: Stage built library
+        run: |
+          rm -rf built-library
+          mkdir -p built-library
+          cp -R .dart_tool/lib/. built-library/
+
+      - uses: actions/upload-artifact@v4
         with:
           name: linux-built-library
           path: built-library/
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   build-macos:
     runs-on: macos-15
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: dart-lang/setup-dart@v1
-      - name: Cache hook outputs and pub cache
-        id: hooks-cache
+
+      - name: Restore Dart package cache
         uses: actions/cache@v4
         with:
-          path: |
-            .pub-cache
-            .dart_tool/hooks_runner
-            .dart_tool/tdlib-cmake-cache
-          key: ${{ runner.os }}-macos-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart', 'lib/src/android_builder.dart', 'lib/src/ios_builder.dart', 'lib/src/tdlib_source.dart') }}
-      - name: Install native toolchain
-        run: brew install cmake coreutils gperf
-      - run: dart pub get --no-example
-      - name: Prebuild native assets
-        if: steps.hooks-cache.outputs.cache-hit != 'true'
-        run: dart run tool/preseed_hooks.dart --target-os macos --target-arch arm64
-      - run: dart test
-      - name: Stage built library
-        if: always()
+          path: ${{ env.PUB_CACHE }}
+          key: >-
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+            ${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Configure C/C++ compiler cache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
+      - name: Verify native build tools
         run: |
-          if [ -d .dart_tool/lib ]; then
-            mkdir -p built-library
-            cp -R .dart_tool/lib/. built-library/
-          else
-            echo 'No built library to stage'
-          fi
-      - uses: actions/upload-artifact@v4
+          cmake --version
+          ninja --version
+          "${SCCACHE_PATH}" --version
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Build and test
+        run: dart test
+
+      - name: Show compiler cache statistics
         if: always()
+        run: "${SCCACHE_PATH} --show-stats"
+
+      - name: Stage built library
+        run: |
+          rm -rf built-library
+          mkdir -p built-library
+          cp -R .dart_tool/lib/. built-library/
+
+      - uses: actions/upload-artifact@v4
         with:
           name: macos-built-library
           path: built-library/
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   build-windows:
     runs-on: windows-latest
+
+    env:
+      CMAKE_GENERATOR: Ninja
+      # Make sure the Dart/CMake process sees these
+      CMAKE_C_COMPILER_LAUNCHER: sccache
+      CMAKE_CXX_COMPILER_LAUNCHER: sccache
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: dart-lang/setup-dart@v1
-      - name: Cache hook outputs and pub cache
-        id: hooks-cache
+
+      # Gives us cl.exe, link.exe, etc. on PATH
+      - name: Configure MSVC command-line environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Restore Dart package cache
         uses: actions/cache@v4
         with:
-          path: |
-            .pub-cache
-            .dart_tool/hooks_runner
-            .dart_tool/tdlib-cmake-cache
-          key: ${{ runner.os }}-windows-x64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart', 'lib/src/android_builder.dart', 'lib/src/ios_builder.dart', 'lib/src/tdlib_source.dart') }}
-      - name: Install native toolchain
+          path: ${{ env.PUB_CACHE }}
+          key: >-
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+            ${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+
+      # -------------------------------------------------------
+      # vcpkg + binary caching (this is the missing piece)
+      # -------------------------------------------------------
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        id: runvcpkg
+        with:
+          # Pin a specific commit for reproducibility
+          vcpkgGitCommitId: '2024.11.16'   # or whatever recent tag/commit you prefer
+          # Only install what TDLib needs
+          runVcpkgInstall: true
+          # These will be installed into the binary cache
+          # (openssl + zlib are the usual requirements)
+          vcpkgJsonGlob: '**/vcpkg.json'   # optional – only if you have a manifest
+          # Force classic mode if you don't have a vcpkg.json
+          # (you can also just call vcpkg install manually below)
+
+      # Fallback / explicit install if you prefer classic mode
+      - name: Install TDLib dependencies (classic mode)
+        if: steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT != ''
         shell: pwsh
         run: |
-          choco install gperf -y --no-progress
-          $vcpkgRoot = "$env:GITHUB_WORKSPACE\vcpkg"
-          git clone --depth 1 https://github.com/microsoft/vcpkg.git $vcpkgRoot
-          & "$vcpkgRoot\bootstrap-vcpkg.bat" -disableMetrics
-          $vcpkgInstalled = "$env:GITHUB_WORKSPACE\.dart_tool\tdlib-cmake-cache\windows-x64\vcpkg_installed"
-          New-Item -ItemType Directory -Force -Path $vcpkgInstalled | Out-Null
-          & "$vcpkgRoot\vcpkg.exe" install zlib:x64-windows openssl:x64-windows --x-install-root $vcpkgInstalled
-          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "VCPKG_TARGET_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "VCPKG_INSTALLED_DIR=$vcpkgInstalled" | Out-File -FilePath $env:GITHUB_ENV -Append
-      - run: dart pub get --no-example
-      - name: Prebuild native assets
-        if: steps.hooks-cache.outputs.cache-hit != 'true'
-        run: dart run tool/preseed_hooks.dart --target-os windows --target-arch x64
-      - run: dart test
+          & "${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT }}/vcpkg.exe" install `
+            openssl:x64-windows `
+            zlib:x64-windows `
+            --triplet x64-windows
+
+      - name: Export VCPKG_ROOT
+        shell: pwsh
+        run: |
+          echo "VCPKG_ROOT=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "VCPKG_DEFAULT_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      # -------------------------------------------------------
+      # sccache
+      # -------------------------------------------------------
+      - name: Configure C/C++ compiler cache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
+      - name: Verify native build tools
+        shell: pwsh
+        run: |
+          cmake --version
+          ninja --version
+          cl
+          & $env:SCCACHE_PATH --version
+          echo "VCPKG_ROOT = $env:VCPKG_ROOT"
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Build and test
+        run: dart test
+
+      - name: Show compiler cache statistics
+        if: always()
+        shell: pwsh
+        run: '& $env:SCCACHE_PATH --show-stats'
+
       - name: Stage built library
-        if: always()
         shell: pwsh
         run: |
-          if (Test-Path '.dart_tool/lib') {
-            New-Item -ItemType Directory -Force -Path built-library | Out-Null
-            Copy-Item -Recurse -Force ".dart_tool/lib/*" built-library
-          } else {
-            Write-Host 'No built library to stage'
-          }
+          Remove-Item -Recurse -Force built-library -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path built-library | Out-Null
+          Copy-Item -Recurse -Force ".dart_tool/lib/*" built-library
+
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: windows-built-library
           path: built-library/
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   build-android:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: dart-lang/setup-dart@v1
-      - name: Cache hook outputs and pub cache
-        id: hooks-cache
+
+      - name: Restore Dart package cache
         uses: actions/cache@v4
         with:
-          path: |
-            .pub-cache
-            .dart_tool/hooks_runner
-            .dart_tool/tdlib-cmake-cache
-          key: ${{ runner.os }}-android-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart', 'lib/src/android_builder.dart', 'lib/src/ios_builder.dart', 'lib/src/tdlib_source.dart') }}
+          path: ${{ env.PUB_CACHE }}
+          key: >-
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+            ${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+
       - name: Install native toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends gperf
-      - run: dart pub get --no-example
-      - name: Prebuild native assets
-        if: steps.hooks-cache.outputs.cache-hit != 'true'
-        run: dart run tool/preseed_hooks.dart --target-os android --target-arch arm64
-      - run: dart test
-      - name: Stage built library
-        if: always()
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            clang \
+            cmake \
+            libclang-dev \
+            ninja-build \
+            pkg-config
+
+      - name: Configure C/C++ compiler cache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
+      - name: Verify native build tools
         run: |
-          if [ -d .dart_tool/lib ]; then
-            mkdir -p built-library
-            cp -R .dart_tool/lib/. built-library/
-          else
-            echo 'No built library to stage'
-          fi
-      - uses: actions/upload-artifact@v4
+          cmake --version
+          ninja --version
+          "${SCCACHE_PATH}" --version
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Build and test
+        run: dart test
+
+      - name: Show compiler cache statistics
         if: always()
+        run: "${SCCACHE_PATH} --show-stats"
+
+      - name: Stage built library
+        run: |
+          rm -rf built-library
+          mkdir -p built-library
+          cp -R .dart_tool/lib/. built-library/
+
+      - uses: actions/upload-artifact@v4
         with:
           name: android-built-library
           path: built-library/
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   build-ios:
     runs-on: macos-15
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: dart-lang/setup-dart@v1
-      - name: Cache hook outputs and pub cache
-        id: hooks-cache
+
+      - name: Restore Dart package cache
         uses: actions/cache@v4
         with:
-          path: |
-            .pub-cache
-            .dart_tool/hooks_runner
-            .dart_tool/tdlib-cmake-cache
-          key: ${{ runner.os }}-ios-arm64-${{ hashFiles('pubspec.lock', 'native_prebuilt.yaml', 'tool/schema/td_api.tl.commit', 'hook/build.dart', 'tool/preseed_hooks.dart', 'lib/src/android_builder.dart', 'lib/src/ios_builder.dart', 'lib/src/tdlib_source.dart') }}
-      - name: Install native toolchain
-        run: brew install cmake coreutils gperf
-      - run: dart pub get --no-example
-      - name: Prebuild native assets
-        if: steps.hooks-cache.outputs.cache-hit != 'true'
-        run: dart run tool/preseed_hooks.dart --target-os ios --target-arch arm64 --ios-sdk iphoneos
-      - run: dart test
-      - name: Stage built library
-        if: always()
+          path: ${{ env.PUB_CACHE }}
+          key: >-
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+            ${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Configure C/C++ compiler cache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
+      - name: Verify native build tools
         run: |
-          if [ -d .dart_tool/lib ]; then
-            mkdir -p built-library
-            cp -R .dart_tool/lib/. built-library/
-          else
-            echo 'No built library to stage'
-          fi
-      - uses: actions/upload-artifact@v4
+          cmake --version
+          ninja --version
+          "${SCCACHE_PATH}" --version
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Build and test
+        run: dart test
+
+      - name: Show compiler cache statistics
         if: always()
+        run: "${SCCACHE_PATH} --show-stats"
+
+      - name: Stage built library
+        run: |
+          rm -rf built-library
+          mkdir -p built-library
+          cp -R .dart_tool/lib/. built-library/
+
+      - uses: actions/upload-artifact@v4
         with:
           name: ios-built-library
           path: built-library/
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   update-manifest:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/')
     needs:
       - build-linux
       - build-macos
@@ -240,48 +365,72 @@ jobs:
       - build-android
       - build-ios
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: dart-lang/setup-dart@v1
+
+      - name: Restore Dart package cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PUB_CACHE }}
+          key: >-
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+            ${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+
       - uses: actions/download-artifact@v4
         with:
           name: linux-built-library
           path: downloaded/linux/
+
       - uses: actions/download-artifact@v4
         with:
           name: macos-built-library
           path: downloaded/macos/
+
       - uses: actions/download-artifact@v4
         with:
           name: windows-built-library
           path: downloaded/windows/
+
       - uses: actions/download-artifact@v4
         with:
           name: android-built-library
           path: downloaded/android/
+
       - uses: actions/download-artifact@v4
         with:
           name: ios-built-library
           path: downloaded/ios/
+
       - name: Merge built libraries
         run: |
           rm -rf built-library release-assets
           mkdir -p built-library release-assets
+
           cp -R downloaded/linux/. built-library/
           cp -R downloaded/macos/. built-library/
           cp -R downloaded/windows/. built-library/
           cp -R downloaded/android/. built-library/
           cp -R downloaded/ios/. built-library/
-      - run: dart pub get --no-example
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
       - name: Generate manifest and release assets
         run: |
           TAG="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}"
+
           dart run native_prebuilt manifest update \
             --config "$CONFIG" \
             --output "$MANIFEST_OUTPUT" \
             --built-library-dir built-library \
             --release-assets-dir release-assets \
             --tag "$TAG"
+
       - uses: actions/upload-artifact@v4
         with:
           name: release-assets
@@ -289,18 +438,24 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/')
     needs:
       - update-manifest
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: release-assets
           path: release-assets/
+
       - name: Publish GitHub release assets
         uses: softprops/action-gh-release@v2
         with:

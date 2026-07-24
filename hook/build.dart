@@ -219,9 +219,9 @@ Future<File> _buildTdlibWithCMake({
 }
 
 String? _resolveVcpkgRoot(HookInput input) {
-  final define = input.userDefines.path('vcpkg_root');
-  if (define != null) {
-    return define.toFilePath();
+  final define = input.userDefines['vcpkg_root'];
+  if (define is String && define.isNotEmpty) {
+    return define;
   }
   return Platform.environment['VCPKG_ROOT'];
 }
