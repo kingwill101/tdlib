@@ -156,6 +156,9 @@ jobs:
       CMAKE_GENERATOR: Ninja
       CMAKE_C_COMPILER_LAUNCHER: sccache
       CMAKE_CXX_COMPILER_LAUNCHER: sccache
+
+      # This must be visible to the Dart build-hook process.
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
       VCPKG_DEFAULT_TRIPLET: x64-windows
       VCPKG_DEFAULT_HOST_TRIPLET: x64-windows
 
@@ -184,32 +187,11 @@ jobs:
             dart-pub-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Set up vcpkg
-        id: runvcpkg
         uses: lukka/run-vcpkg@v11
         with:
+          vcpkgDirectory: ${{ env.VCPKG_ROOT }}
           vcpkgGitCommitId: b2cb0da531c2f1f740045bfe7c4dac59f0b2b69c
           runVcpkgInstall: false
-
-      - name: Export vcpkg environment
-        shell: pwsh
-        run: |
-          "VCPKG_ROOT=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT }}" |
-            Out-File `
-              -FilePath $env:GITHUB_ENV `
-              -Encoding utf8 `
-              -Append
-
-          "VCPKG_DEFAULT_TRIPLET=x64-windows" |
-            Out-File `
-              -FilePath $env:GITHUB_ENV `
-              -Encoding utf8 `
-              -Append
-
-          "VCPKG_DEFAULT_HOST_TRIPLET=x64-windows" |
-            Out-File `
-              -FilePath $env:GITHUB_ENV `
-              -Encoding utf8 `
-              -Append
 
       - name: Configure C/C++ compiler cache
         id: sccache
@@ -223,11 +205,28 @@ jobs:
           gperf --version
           cl
           sccache --version
-          vcpkg version
 
           Write-Host "VCPKG_ROOT = $env:VCPKG_ROOT"
           Write-Host "VCPKG_DEFAULT_TRIPLET = $env:VCPKG_DEFAULT_TRIPLET"
           Write-Host "CMAKE_GENERATOR = $env:CMAKE_GENERATOR"
+
+          $vcpkgExe = Join-Path $env:VCPKG_ROOT "vcpkg.exe"
+
+          if (-not (Test-Path $vcpkgExe)) {
+            throw "vcpkg.exe was not found at: $vcpkgExe"
+          }
+
+          & $vcpkgExe version
+
+          $toolchainFile = Join-Path `
+            $env:VCPKG_ROOT `
+            "scripts/buildsystems/vcpkg.cmake"
+
+          if (-not (Test-Path $toolchainFile)) {
+            throw "vcpkg CMake toolchain was not found at: $toolchainFile"
+          }
+
+          Write-Host "vcpkg toolchain = $toolchainFile"
 
       - name: Resolve Dart dependencies
         run: dart pub get
