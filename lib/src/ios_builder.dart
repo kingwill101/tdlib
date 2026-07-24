@@ -43,6 +43,9 @@ Future<Directory> buildTdlibIos({
   final iosPlatform = targetSdk == IOSSdk.iPhoneOS ? 'OS' : 'SIMULATOR';
   logger?.info('Configuring TDLib with CMake in ${buildDir.path}');
   await _run('cmake', [
+    '-G',
+    'Unix Makefiles',
+    '-DCMAKE_MAKE_PROGRAM=/usr/bin/make',
     '-S',
     sourceDirectory,
     '-B',
@@ -96,6 +99,9 @@ Future<void> _prepareSourceForCrossCompile({
   buildDir.createSync(recursive: true);
   logger?.info('Preparing TDLib source for cross-compiling');
   await _run('cmake', [
+    '-G',
+    'Unix Makefiles',
+    '-DCMAKE_MAKE_PROGRAM=/usr/bin/make',
     '-S',
     sourceDirectory,
     '-B',

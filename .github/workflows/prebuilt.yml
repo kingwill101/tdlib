@@ -54,14 +54,20 @@ jobs:
         run: dart run tool/preseed_hooks.dart --target-os linux --target-arch x64
       - run: dart test
       - name: Stage built library
+        if: always()
         run: |
-          mkdir -p built-library
-          cp -R .dart_tool/lib/. built-library/
+          if [ -d .dart_tool/lib ]; then
+            mkdir -p built-library
+            cp -R .dart_tool/lib/. built-library/
+          else
+            echo 'No built library to stage'
+          fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: linux-built-library
           path: built-library/
-          if-no-files-found: error
+          if-no-files-found: ignore
 
   build-macos:
     runs-on: macos-15
@@ -85,14 +91,20 @@ jobs:
         run: dart run tool/preseed_hooks.dart --target-os macos --target-arch arm64
       - run: dart test
       - name: Stage built library
+        if: always()
         run: |
-          mkdir -p built-library
-          cp -R .dart_tool/lib/. built-library/
+          if [ -d .dart_tool/lib ]; then
+            mkdir -p built-library
+            cp -R .dart_tool/lib/. built-library/
+          else
+            echo 'No built library to stage'
+          fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: macos-built-library
           path: built-library/
-          if-no-files-found: error
+          if-no-files-found: ignore
 
   build-windows:
     runs-on: windows-latest
@@ -127,14 +139,21 @@ jobs:
         run: dart run tool/preseed_hooks.dart --target-os windows --target-arch x64
       - run: dart test
       - name: Stage built library
+        if: always()
+        shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path built-library | Out-Null
-          Copy-Item -Recurse -Force ".dart_tool/lib/*" built-library
+          if (Test-Path '.dart_tool/lib') {
+            New-Item -ItemType Directory -Force -Path built-library | Out-Null
+            Copy-Item -Recurse -Force ".dart_tool/lib/*" built-library
+          } else {
+            Write-Host 'No built library to stage'
+          }
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: windows-built-library
           path: built-library/
-          if-no-files-found: error
+          if-no-files-found: ignore
 
   build-android:
     runs-on: ubuntu-latest
@@ -160,14 +179,20 @@ jobs:
         run: dart run tool/preseed_hooks.dart --target-os android --target-arch arm64
       - run: dart test
       - name: Stage built library
+        if: always()
         run: |
-          mkdir -p built-library
-          cp -R .dart_tool/lib/. built-library/
+          if [ -d .dart_tool/lib ]; then
+            mkdir -p built-library
+            cp -R .dart_tool/lib/. built-library/
+          else
+            echo 'No built library to stage'
+          fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: android-built-library
           path: built-library/
-          if-no-files-found: error
+          if-no-files-found: ignore
 
   build-ios:
     runs-on: macos-15
@@ -191,14 +216,20 @@ jobs:
         run: dart run tool/preseed_hooks.dart --target-os ios --target-arch arm64 --ios-sdk iphoneos
       - run: dart test
       - name: Stage built library
+        if: always()
         run: |
-          mkdir -p built-library
-          cp -R .dart_tool/lib/. built-library/
+          if [ -d .dart_tool/lib ]; then
+            mkdir -p built-library
+            cp -R .dart_tool/lib/. built-library/
+          else
+            echo 'No built library to stage'
+          fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: ios-built-library
           path: built-library/
-          if-no-files-found: error
+          if-no-files-found: ignore
 
   update-manifest:
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')

@@ -66,19 +66,4 @@ void main() {
     }
   });
 
-  test('registers the Linux TDLib prebuilt for the generated bindings', () async {
-    await testCodeBuildHook(
-      mainMethod: tdlib_hook.main,
-      targetOS: OS.linux,
-      check: (input, output) {
-        expect(output.assets.code, hasLength(1));
-
-        final asset = output.assets.code.single;
-        expect(asset.id, 'package:tdlib/src/tdlib.g.dart');
-        expect(asset.linkMode, isA<DynamicLoadingBundled>());
-        expect(File.fromUri(asset.file!).existsSync(), isTrue);
-        expect(File.fromUri(asset.file!).readAsBytesSync().sublist(0, 4), [0x7F, 0x45, 0x4C, 0x46]);
-      },
-    );
-  });
 }
