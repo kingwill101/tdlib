@@ -59,6 +59,7 @@ jobs:
             build-essential \
             clang \
             cmake \
+            gperf \
             libclang-dev \
             ninja-build \
             pkg-config
@@ -70,6 +71,7 @@ jobs:
         run: |
           cmake --version
           ninja --version
+          gperf --version
           "${SCCACHE_PATH}" --version
 
       - name: Resolve Dart dependencies
@@ -112,6 +114,9 @@ jobs:
           restore-keys: |
             dart-pub-${{ runner.os }}-${{ runner.arch }}-
 
+      - name: Install native tools
+        run: brew install gperf
+
       - name: Configure C/C++ compiler cache
         uses: mozilla-actions/sccache-action@v0.0.10
 
@@ -119,6 +124,7 @@ jobs:
         run: |
           cmake --version
           ninja --version
+          gperf --version
           "${SCCACHE_PATH}" --version
 
       - name: Resolve Dart dependencies
@@ -148,7 +154,6 @@ jobs:
 
     env:
       CMAKE_GENERATOR: Ninja
-      # Make sure the Dart/CMake process sees these
       CMAKE_C_COMPILER_LAUNCHER: sccache
       CMAKE_CXX_COMPILER_LAUNCHER: sccache
 
@@ -157,11 +162,14 @@ jobs:
 
       - uses: dart-lang/setup-dart@v1
 
-      # Gives us cl.exe, link.exe, etc. on PATH
       - name: Configure MSVC command-line environment
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
+
+      - name: Install native tools
+        shell: pwsh
+        run: choco install gperf -y
 
       - name: Restore Dart package cache
         uses: actions/cache@v4
@@ -173,32 +181,12 @@ jobs:
           restore-keys: |
             dart-pub-${{ runner.os }}-${{ runner.arch }}-
 
-      # -------------------------------------------------------
-      # vcpkg + binary caching (this is the missing piece)
-      # -------------------------------------------------------
+      # vcpkg
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         id: runvcpkg
         with:
-          # Pin a specific commit for reproducibility
-          vcpkgGitCommitId: '2024.11.16'   # or whatever recent tag/commit you prefer
-          # Only install what TDLib needs
-          runVcpkgInstall: true
-          # These will be installed into the binary cache
-          # (openssl + zlib are the usual requirements)
-          vcpkgJsonGlob: '**/vcpkg.json'   # optional – only if you have a manifest
-          # Force classic mode if you don't have a vcpkg.json
-          # (you can also just call vcpkg install manually below)
-
-      # Fallback / explicit install if you prefer classic mode
-      - name: Install TDLib dependencies (classic mode)
-        if: steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT != ''
-        shell: pwsh
-        run: |
-          & "${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT }}/vcpkg.exe" install `
-            openssl:x64-windows `
-            zlib:x64-windows `
-            --triplet x64-windows
+          vcpkgGitCommitId: '2024.11.16'
 
       - name: Export VCPKG_ROOT
         shell: pwsh
@@ -206,9 +194,7 @@ jobs:
           echo "VCPKG_ROOT=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "VCPKG_DEFAULT_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-      # -------------------------------------------------------
       # sccache
-      # -------------------------------------------------------
       - name: Configure C/C++ compiler cache
         uses: mozilla-actions/sccache-action@v0.0.10
 
@@ -217,6 +203,7 @@ jobs:
         run: |
           cmake --version
           ninja --version
+          gperf --version
           cl
           & $env:SCCACHE_PATH --version
           echo "VCPKG_ROOT = $env:VCPKG_ROOT"
@@ -270,6 +257,7 @@ jobs:
             build-essential \
             clang \
             cmake \
+            gperf \
             libclang-dev \
             ninja-build \
             pkg-config
@@ -281,6 +269,7 @@ jobs:
         run: |
           cmake --version
           ninja --version
+          gperf --version
           "${SCCACHE_PATH}" --version
 
       - name: Resolve Dart dependencies
@@ -323,6 +312,9 @@ jobs:
           restore-keys: |
             dart-pub-${{ runner.os }}-${{ runner.arch }}-
 
+      - name: Install native tools
+        run: brew install gperf
+
       - name: Configure C/C++ compiler cache
         uses: mozilla-actions/sccache-action@v0.0.10
 
@@ -330,6 +322,7 @@ jobs:
         run: |
           cmake --version
           ninja --version
+          gperf --version
           "${SCCACHE_PATH}" --version
 
       - name: Resolve Dart dependencies

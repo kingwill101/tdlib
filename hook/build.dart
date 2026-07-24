@@ -183,8 +183,11 @@ Future<File> _buildTdlibWithCMake({
     '-B',
     buildDir.path,
     '-DCMAKE_BUILD_TYPE=Release',
+    '-DCMAKE_C_COMPILER_LAUNCHER=sccache',
+    '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache',
   ];
   if (targetOS == OS.windows) {
+    cmakeArgs.addAll(['-G', 'Ninja']);
     final vcpkgRoot = _resolveVcpkgRoot(input);
     if (vcpkgRoot == null || vcpkgRoot.isEmpty) {
       throw UnsupportedError(
