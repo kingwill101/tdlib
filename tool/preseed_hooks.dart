@@ -47,8 +47,21 @@ Future<void> main(List<String> args) async {
     options: options,
   ).build();
 
+  final inputJson = input.json;
+  if (targetOS == OS.windows) {
+    final vcpkgRoot = Platform.environment['VCPKG_ROOT'];
+    if (vcpkgRoot != null && vcpkgRoot.isNotEmpty) {
+      inputJson['user_defines'] = {
+        'workspace_pubspec': {
+          'base_path': Directory.current.uri.toFilePath(),
+          'defines': {'vcpkg_root': vcpkgRoot},
+        },
+      };
+    }
+  }
+
   final inputFile = File.fromUri(hookDir.uri.resolve('input.json'));
-  inputFile.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(input.json));
+  inputFile.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(inputJson));
 
   stdout.writeln('Hook input: ${inputFile.path}');
   stdout.writeln('Hook output: ${File.fromUri(hookDir.uri.resolve('output.json')).path}');
@@ -83,16 +96,10 @@ BuildInputBuilder _buildInput({
   required ArgResults options,
 }) {
   final vcpkgRoot = Platform.environment['VCPKG_ROOT'];
-  if (targetOS == OS.windows && (vcpkgRoot == null || vcpkgRoot.isEmpty)) {
-    throw StateError('VCPKG_ROOT must be set before prebuilding Windows assets.');
-  }
-
-  final userDefines = targetOS == OS.windows
+  final userDefines = targetOS == OS.windows && vcpkgRoot != null && vcpkgRoot.isNotEmpty
       ? PackageUserDefines(
           workspacePubspec: PackageUserDefinesSource(
-            defines: {
-              'vcpkg_root': vcpkgRoot,
-            },
+            defines: {'vcpkg_root': vcpkgRoot},
             basePath: Directory.current.uri,
           ),
         )

@@ -191,7 +191,9 @@ Future<File> _buildTdlibWithCMake({
     final vcpkgRoot = _resolveVcpkgRoot(input);
     if (vcpkgRoot == null || vcpkgRoot.isEmpty) {
       throw UnsupportedError(
-        'Windows source builds require VCPKG_ROOT to be set and vcpkg to be installed.',
+        'Windows source builds require vcpkg.exe to be available on PATH, '
+        'VCPKG_ROOT to be set, or vcpkg_root to be supplied as a '
+        'hook user define.',
       );
     }
     cmakeArgs.addAll([
@@ -226,7 +228,51 @@ String? _resolveVcpkgRoot(HookInput input) {
   if (define is String && define.isNotEmpty) {
     return define;
   }
-  return Platform.environment['VCPKG_ROOT'];
+
+  final environmentRoot = Platform.environment['VCPKG_ROOT'];
+  if (environmentRoot != null && environmentRoot.isNotEmpty) {
+    return environmentRoot;
+  }
+
+  if (Platform.isWindows) {
+    final result = Process.runSync(
+      'where.exe',
+      ['vcpkg.exe'],
+      runInShell: true,
+    );
+
+    if (result.exitCode == 0) {
+      final candidates = result.stdout
+          .toString()
+          .split(RegExp(r'\r?\n'))
+          .map((path) => path.trim())
+          .where((path) => path.isNotEmpty);
+
+      for (final candidate in candidates) {
+        final executable = File(candidate);
+        if (!executable.existsSync()) {
+          continue;
+        }
+
+        final root = executable.parent;
+        final toolchain = File(
+          '${root.path}'
+          '${Platform.pathSeparator}scripts'
+          '${Platform.pathSeparator}buildsystems'
+          '${Platform.pathSeparator}vcpkg.cmake',
+        );
+
+        if (toolchain.existsSync()) {
+          Logger.root.info(
+            'Resolved vcpkg from PATH: ${root.path}',
+          );
+          return root.path;
+        }
+      }
+    }
+  }
+
+  return null;
 }
 
 String? _resolveNdkPath(HookInput input) {
@@ -295,7 +341,8 @@ Future<void> _runCmakeConfigure({
     await _run('cmake', cmakeArgs);
   } on ProcessException catch (error) {
     final details = error.toString();
-    if (!details.contains('does not match the source')) {
+    if (!details.contains('does not match the source') &&
+        !details.contains('Does not match the generator')) {
       rethrow;
     }
 
