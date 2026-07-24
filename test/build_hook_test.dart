@@ -6,7 +6,6 @@ import 'package:hooks/hooks.dart';
 import 'package:native_prebuilt/native_prebuilt.dart';
 import 'package:test/test.dart';
 
-
 void main() {
   test('parses build_from_source from user-defines', () {
     final root = Directory.systemTemp.createTempSync('tdlib_hook_test');
