@@ -2,8 +2,6 @@ name: Prebuilt
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'tdlib-v*'
   pull_request:
