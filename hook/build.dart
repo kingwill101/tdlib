@@ -176,6 +176,10 @@ Future<File> _buildTdlibWithCMake({
   final buildDir = Directory('${workingRoot.path}/build');
   buildDir.createSync(recursive: true);
 
+  final buildEnvironment = targetOS == OS.windows
+      ? await _windowsMsvcEnvironment()
+      : null;
+
   Logger.root.info('Configuring TDLib with CMake in ${buildDir.path}');
   final cmakeArgs = <String>[
     '-S',
@@ -201,17 +205,25 @@ Future<File> _buildTdlibWithCMake({
       '-DVCPKG_TARGET_TRIPLET=${Platform.environment['VCPKG_TARGET_TRIPLET'] ?? 'x64-windows'}',
     ]);
   }
-  await _runCmakeConfigure(buildDir: buildDir, cmakeArgs: cmakeArgs);
+  await _runCmakeConfigure(
+    buildDir: buildDir,
+    cmakeArgs: cmakeArgs,
+    environment: buildEnvironment,
+  );
 
   Logger.root.info('Building TDLib target tdjson');
-  await _run('cmake', [
-    '--build',
-    buildDir.path,
-    '--target',
-    'tdjson',
-    '--parallel',
-    _parallelism().toString(),
-  ]);
+  await _run(
+    'cmake',
+    [
+      '--build',
+      buildDir.path,
+      '--target',
+      'tdjson',
+      '--parallel',
+      _parallelism().toString(),
+    ],
+    environment: buildEnvironment,
+  );
 
   final builtLib = _findBuiltLibrary(buildDir, libName);
   if (builtLib == null) {
@@ -220,6 +232,110 @@ Future<File> _buildTdlibWithCMake({
     );
   }
   return _copyToHookOutput(input, builtLib, libName);
+}
+
+Future<Map<String, String>> _windowsMsvcEnvironment() async {
+  final clPath = _findExecutableOnWindows('cl.exe');
+
+  if (clPath == null) {
+    throw StateError(
+      'cl.exe was not found on PATH. Run the build from an MSVC environment.',
+    );
+  }
+
+  final normalized = clPath.replaceAll('/', r'\');
+  final marker = r'\VC\Tools\MSVC\';
+  final markerIndex = normalized.toLowerCase().indexOf(
+    marker.toLowerCase(),
+  );
+
+  if (markerIndex == -1) {
+    throw StateError(
+      'Could not derive the Visual Studio installation from $clPath.',
+    );
+  }
+
+  final visualStudioRoot = normalized.substring(0, markerIndex);
+  final vcvarsPath = [
+    visualStudioRoot,
+    'VC',
+    'Auxiliary',
+    'Build',
+    'vcvars64.bat',
+  ].join(r'\');
+
+  if (!File(vcvarsPath).existsSync()) {
+    throw StateError('vcvars64.bat was not found at $vcvarsPath.');
+  }
+
+  Logger.root.info('Loading MSVC environment from $vcvarsPath');
+
+  final result = await Process.run(
+    'cmd.exe',
+    [
+      '/d',
+      '/s',
+      '/c',
+      'call "$vcvarsPath" >nul && set',
+    ],
+    runInShell: false,
+  );
+
+  if (result.exitCode != 0) {
+    throw ProcessException(
+      'cmd.exe',
+      ['/c', 'call "$vcvarsPath" && set'],
+      'Failed to load the MSVC environment.\n'
+      'stdout:\n${result.stdout}\n'
+      'stderr:\n${result.stderr}',
+      result.exitCode,
+    );
+  }
+
+  final environment = <String, String>{
+    ...Platform.environment,
+  };
+
+  for (final line in result.stdout.toString().split(RegExp(r'\r?\n'))) {
+    final separator = line.indexOf('=');
+
+    if (separator <= 0) {
+      continue;
+    }
+
+    final name = line.substring(0, separator);
+    final value = line.substring(separator + 1);
+    environment[name] = value;
+  }
+
+  Logger.root.info(
+    'Loaded MSVC LIB environment: '
+    '${environment.containsKey('LIB')}',
+  );
+
+  return environment;
+}
+
+String? _findExecutableOnWindows(String executable) {
+  final result = Process.runSync(
+    'where.exe',
+    [executable],
+    runInShell: false,
+  );
+
+  if (result.exitCode != 0) {
+    return null;
+  }
+
+  for (final line in result.stdout.toString().split(RegExp(r'\r?\n'))) {
+    final path = line.trim();
+
+    if (path.isNotEmpty && File(path).existsSync()) {
+      return path;
+    }
+  }
+
+  return null;
 }
 
 String? _resolveVcpkgRoot(HookInput input) {
@@ -234,6 +350,28 @@ String? _resolveVcpkgRoot(HookInput input) {
   }
 
   if (Platform.isWindows) {
+    final repositoryVcpkg = Directory(
+      '${Directory.current.path}${Platform.pathSeparator}vcpkg',
+    );
+
+    final repoExecutable = File(
+      '${repositoryVcpkg.path}${Platform.pathSeparator}vcpkg.exe',
+    );
+
+    final repoToolchain = File(
+      '${repositoryVcpkg.path}'
+      '${Platform.pathSeparator}scripts'
+      '${Platform.pathSeparator}buildsystems'
+      '${Platform.pathSeparator}vcpkg.cmake',
+    );
+
+    if (repoExecutable.existsSync() && repoToolchain.existsSync()) {
+      Logger.root.info(
+        'Resolved repository vcpkg: ${repositoryVcpkg.path}',
+      );
+      return repositoryVcpkg.path;
+    }
+
     final result = Process.runSync(
       'where.exe',
       ['vcpkg.exe'],
@@ -335,24 +473,37 @@ Architecture? _hostArchitecture() {
 Future<void> _runCmakeConfigure({
   required Directory buildDir,
   required List<String> cmakeArgs,
+  Map<String, String>? environment,
 }) async {
   try {
-    await _run('cmake', cmakeArgs);
+    await _run(
+      'cmake',
+      cmakeArgs,
+      environment: environment,
+    );
   } on ProcessException catch (error) {
     final details = error.toString();
-    if (!details.contains('does not match the source') &&
-        !details.contains('Does not match the generator')) {
+
+    if (!details.contains('does not match the source')) {
       rethrow;
     }
 
     Logger.root.warning(
-      'CMake cache source mismatch detected; clearing ${buildDir.path} and retrying.',
+      'CMake cache source mismatch detected; '
+      'clearing ${buildDir.path} and retrying.',
     );
+
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
     }
+
     buildDir.createSync(recursive: true);
-    await _run('cmake', cmakeArgs);
+
+    await _run(
+      'cmake',
+      cmakeArgs,
+      environment: environment,
+    );
   }
 }
 
@@ -360,13 +511,17 @@ Future<void> _run(
   String executable,
   List<String> arguments, {
   String? workingDirectory,
+  Map<String, String>? environment,
 }) async {
   final result = await Process.run(
     executable,
     arguments,
     workingDirectory: workingDirectory,
+    environment: environment,
+    includeParentEnvironment: true,
     runInShell: Platform.isWindows,
   );
+
   if (result.exitCode != 0) {
     throw ProcessException(
       executable,
