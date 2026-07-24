@@ -189,6 +189,9 @@ Future<File> _buildTdlibWithCMake({
     '-DCMAKE_BUILD_TYPE=Release',
     '-DCMAKE_C_COMPILER_LAUNCHER=sccache',
     '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache',
+
+    // TDLib auto-detects ccache when on PATH. Prevent double-wrapping.
+    '-DCCACHE_FOUND=OFF',
   ];
   if (targetOS == OS.windows) {
     cmakeArgs.addAll(['-G', 'Ninja']);
