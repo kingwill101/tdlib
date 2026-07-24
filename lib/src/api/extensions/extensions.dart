@@ -1,4 +1,5 @@
 import 'package:tdlib/td_api.dart';
+
 extension AuthenticationCodeTypeExtensions on AuthenticationCodeType {
   TResult map<TResult extends Object?>({
     required TResult Function(AuthenticationCodeTypeCall value) call,

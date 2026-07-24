@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:code_assets/code_assets.dart';
 import 'package:code_assets/src/code_assets/config.dart';
 import 'package:hooks/hooks.dart';
+import 'package:native_prebuilt/native_prebuilt.dart';
 import 'package:test/test.dart';
 
-import '../hook/build.dart' as tdlib_hook;
 
 void main() {
   test('parses build_from_source from user-defines', () {
@@ -28,7 +28,7 @@ void main() {
         );
 
       final input = inputBuilder.build();
-      expect(tdlib_hook.shouldBuildFromSource(input), isFalse);
+      expect(shouldBuildFromSource(input), isFalse);
     } finally {
       root.deleteSync(recursive: true);
     }
@@ -60,10 +60,9 @@ void main() {
         );
 
       final input = inputBuilder.build();
-      expect(tdlib_hook.shouldBuildFromSource(input), isTrue);
+      expect(shouldBuildFromSource(input), isTrue);
     } finally {
       root.deleteSync(recursive: true);
     }
   });
-
 }

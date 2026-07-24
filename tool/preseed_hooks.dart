@@ -7,9 +7,15 @@ import 'package:hooks/hooks.dart';
 
 Future<void> main(List<String> args) async {
   final parser = ArgParser()
-    ..addOption('target-os', help: 'Target OS (linux, macos, windows, android, ios).')
+    ..addOption(
+      'target-os',
+      help: 'Target OS (linux, macos, windows, android, ios).',
+    )
     ..addOption('target-arch', help: 'Target architecture (x64, arm64, ...).')
-    ..addOption('ios-sdk', help: 'Target iOS SDK (iphoneos or iphonesimulator).')
+    ..addOption(
+      'ios-sdk',
+      help: 'Target iOS SDK (iphoneos or iphonesimulator).',
+    )
     ..addOption('ios-version', defaultsTo: '17')
     ..addOption('macos-version', defaultsTo: '13')
     ..addOption('android-ndk-api', defaultsTo: '30')
@@ -25,10 +31,14 @@ Future<void> main(List<String> args) async {
 
   final targetOS = OS.fromString(osName);
   final targetArch = Architecture.fromString(archName);
-  final sharedRoot = Directory.current.uri.resolve('.dart_tool/hooks_runner/shared/tdlib/');
+  final sharedRoot = Directory.current.uri.resolve(
+    '.dart_tool/hooks_runner/shared/tdlib/',
+  );
 
   final initialInput = _buildInput(
-    outputFile: Directory.current.uri.resolve('.dart_tool/hooks_runner/tdlib/_pending/output.json'),
+    outputFile: Directory.current.uri.resolve(
+      '.dart_tool/hooks_runner/tdlib/_pending/output.json',
+    ),
     sharedRoot: sharedRoot,
     targetOS: targetOS,
     targetArch: targetArch,
@@ -61,10 +71,14 @@ Future<void> main(List<String> args) async {
   }
 
   final inputFile = File.fromUri(hookDir.uri.resolve('input.json'));
-  inputFile.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(inputJson));
+  inputFile.writeAsStringSync(
+    const JsonEncoder.withIndent('  ').convert(inputJson),
+  );
 
   stdout.writeln('Hook input: ${inputFile.path}');
-  stdout.writeln('Hook output: ${File.fromUri(hookDir.uri.resolve('output.json')).path}');
+  stdout.writeln(
+    'Hook output: ${File.fromUri(hookDir.uri.resolve('output.json')).path}',
+  );
 
   final process = await Process.start(
     Platform.resolvedExecutable,
@@ -96,7 +110,8 @@ BuildInputBuilder _buildInput({
   required ArgResults options,
 }) {
   final vcpkgRoot = Platform.environment['VCPKG_ROOT'];
-  final userDefines = targetOS == OS.windows && vcpkgRoot != null && vcpkgRoot.isNotEmpty
+  final userDefines =
+      targetOS == OS.windows && vcpkgRoot != null && vcpkgRoot.isNotEmpty
       ? PackageUserDefines(
           workspacePubspec: PackageUserDefinesSource(
             defines: {'vcpkg_root': vcpkgRoot},
@@ -118,18 +133,24 @@ BuildInputBuilder _buildInput({
 
   final iOS = targetOS == OS.iOS
       ? IOSCodeConfig(
-          targetSdk: IOSSdk.fromString((options['ios-sdk'] as String?) ?? 'iphoneos'),
+          targetSdk: IOSSdk.fromString(
+            (options['ios-sdk'] as String?) ?? 'iphoneos',
+          ),
           targetVersion: int.parse((options['ios-version'] as String?) ?? '17'),
         )
       : null;
   final macOS = targetOS == OS.macOS
       ? MacOSCodeConfig(
-          targetVersion: int.parse((options['macos-version'] as String?) ?? '13'),
+          targetVersion: int.parse(
+            (options['macos-version'] as String?) ?? '13',
+          ),
         )
       : null;
   final android = targetOS == OS.android
       ? AndroidCodeConfig(
-          targetNdkApi: int.parse((options['android-ndk-api'] as String?) ?? '30'),
+          targetNdkApi: int.parse(
+            (options['android-ndk-api'] as String?) ?? '30',
+          ),
         )
       : null;
 

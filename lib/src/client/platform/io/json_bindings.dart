@@ -5,18 +5,12 @@ import 'dart:io';
 import 'package:ffi/ffi.dart';
 
 typedef TdJsonClientCreateNative = ffi.Pointer Function();
-typedef TdJsonClientReceiveNative = ffi.Pointer<Utf8> Function(
-  ffi.Pointer,
-  ffi.Double,
-);
-typedef TdJsonClientSendNative = ffi.Void Function(
-  ffi.Pointer,
-  ffi.Pointer<Utf8>,
-);
-typedef TdJsonClientExecuteNative = ffi.Pointer<Utf8> Function(
-  ffi.Pointer,
-  ffi.Pointer<Utf8>,
-);
+typedef TdJsonClientReceiveNative =
+    ffi.Pointer<Utf8> Function(ffi.Pointer, ffi.Double);
+typedef TdJsonClientSendNative =
+    ffi.Void Function(ffi.Pointer, ffi.Pointer<Utf8>);
+typedef TdJsonClientExecuteNative =
+    ffi.Pointer<Utf8> Function(ffi.Pointer, ffi.Pointer<Utf8>);
 typedef TdJsonClientDestroyNative = ffi.Void Function(ffi.Pointer);
 
 /// Thin FFI wrapper around `td_json_client_*`.
