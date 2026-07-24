@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:tdlib/src/android_builder.dart';
+import 'package:tdlib/src/tdlib_source.dart';
 import 'package:test/test.dart';
 
 void main() {

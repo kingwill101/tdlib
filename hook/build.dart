@@ -6,12 +6,14 @@ import 'package:hooks/hooks.dart';
 import 'package:logging/logging.dart';
 import 'package:native_prebuilt/hooks.dart';
 import 'package:tdlib/src/android_builder.dart' as android;
+import 'package:tdlib/src/ios_builder.dart' as ios;
+import 'package:tdlib/src/tdlib_source.dart';
 import 'package:tdlib/src/hook/tdlib_prebuilts.g.dart';
 
 Future<void> main(List<String> args) async {
   Logger.root.level = Level.INFO;
-  Logger.root.onRecord.listen((r) {
-    stderr.writeln('[tdlib] ${r.level.name}: ${r.message}');
+  Logger.root.onRecord.listen((record) {
+    stderr.writeln('[tdlib] ${record.level.name}: ${record.message}');
   });
 
   await build(args, (input, output) async {
@@ -29,28 +31,26 @@ Future<void> main(List<String> args) async {
       linkModeResolver: (_) => DynamicLoadingBundled(),
       sourceFallback: SourceFallback(
         sources: [
-          GitSource(
-            repository: Uri.parse(android.kTDLibRepo),
-            revision: android.kTDLibCommit,
-          ),
+          GitSource(repository: Uri.parse(kTDLibRepo), revision: kTDLibCommit),
         ],
         builder: CallbackSourceBuilder(
-          callback: ({
-            required source,
-            required input,
-            required output,
-            required logger,
-          }) async {
-            final builtLib = await _buildTdlibFromSource(
-              input: input,
-              os: os,
-              arch: arch,
-              libName: libName,
-              sourceDirectory: source.directory,
-              logger: logger,
-            );
-            _registerTdlibAsset(input, output, builtLib);
-          },
+          callback:
+              ({
+                required source,
+                required input,
+                required output,
+                required logger,
+              }) async {
+                final builtLib = await _buildTdlibFromSource(
+                  input: input,
+                  os: os,
+                  arch: arch,
+                  libName: libName,
+                  sourceDirectory: source.directory,
+                  logger: logger,
+                );
+                _registerTdlibAsset(input, output, builtLib);
+              },
         ),
       ),
       resolvers: buildFromSource ? const <PrebuiltResolver>[] : null,
@@ -101,7 +101,7 @@ Future<File> _buildTdlibFromSource({
       logger?.info('Using resolved NDK: $ndkPath');
     }
 
-    final workRoot = Directory.fromUri(input.outputDirectory.resolve('tdlib_work/'));
+    final workRoot = _cacheRoot('android-$abi-api$apiLevel');
     final artifactDir = Directory.fromUri(
       input.outputDirectory.resolve('artifacts/'),
     );
@@ -123,52 +123,124 @@ Future<File> _buildTdlibFromSource({
     throw StateError('Build produced no output at ${builtLib.path}');
   }
 
+  if (os == OS.iOS) {
+    final iosConfig = input.config.code.iOS;
+
+    final workRoot = _cacheRoot(
+      'ios-${iosConfig.targetSdk.type}-v${iosConfig.targetVersion}',
+    );
+    final artifactDir = Directory.fromUri(
+      input.outputDirectory.resolve('artifacts/'),
+    );
+    final outDir = await ios.buildTdlibIos(
+      workingRoot: workRoot.path,
+      outputDirectory: artifactDir.path,
+      sourceDirectory: sourceDirectory.path,
+      targetSdk: iosConfig.targetSdk,
+      targetVersion: iosConfig.targetVersion,
+      logger: logger,
+    );
+
+    final builtLib = File('${outDir.path}/$libName');
+    if (builtLib.existsSync()) {
+      logger?.info('Registered code asset: ${builtLib.path}');
+      return builtLib;
+    }
+    throw StateError('Build produced no output at ${builtLib.path}');
+  }
+
   if (!_canBuildOnHost(os, arch)) {
     throw UnsupportedError(
       'No prebuilt TDLib library found for ${os.name}/${arch.name}, and '
-      'the TDLib hook only builds from source for the current host OS. '
-      'Provide ${_nativeDir(os, arch)}/$libName or build it outside '
-      'the hook.',
+      'the TDLib hook only builds from source for supported host targets. '
+      'Provide ${_nativeDir(os, arch)}/$libName or build it outside the hook.',
     );
   }
 
   return _buildTdlibWithCMake(
     input: input,
-    os: os,
-    arch: arch,
+    targetOS: os,
     libName: libName,
     sourceDir: sourceDirectory,
+    workingRoot: _cacheRoot('${os.name}-${arch.name}'),
   );
 }
 
 Future<File> _buildTdlibWithCMake({
   required HookInput input,
-  required OS os,
-  required Architecture arch,
+  required OS targetOS,
   required String libName,
   required Directory sourceDir,
+  required Directory workingRoot,
 }) async {
-  final buildDir = Directory.fromUri(input.outputDirectory.resolve('build/'));
+  final buildDir = Directory('${workingRoot.path}/build');
   buildDir.createSync(recursive: true);
 
+  final buildEnvironment = targetOS == OS.windows
+      ? await _windowsMsvcEnvironment()
+      : null;
+
   Logger.root.info('Configuring TDLib with CMake in ${buildDir.path}');
-  await _run('cmake', [
+  final cmakeArgs = <String>[
     '-S',
     sourceDir.path,
     '-B',
     buildDir.path,
     '-DCMAKE_BUILD_TYPE=Release',
-  ]);
+    '-DCMAKE_C_COMPILER_LAUNCHER=sccache',
+    '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache',
+
+    // TDLib auto-detects ccache when on PATH. Prevent double-wrapping.
+    '-DCCACHE_FOUND=OFF',
+  ];
+  if (targetOS == OS.windows) {
+    cmakeArgs.addAll(['-G', 'Ninja']);
+
+    final vcpkgRoot = _resolveVcpkgRoot(input);
+    if (vcpkgRoot == null || vcpkgRoot.isEmpty) {
+      throw UnsupportedError(
+        'Windows source builds require vcpkg.exe to be available on PATH, '
+        'VCPKG_ROOT to be set, or vcpkg_root to be supplied as a '
+        'hook user define.',
+      );
+    }
+
+    final vcpkgInstalledDir = Directory(
+      '${workingRoot.path}${Platform.pathSeparator}vcpkg_installed',
+    );
+
+    Logger.root.info('Using vcpkg root: $vcpkgRoot');
+    Logger.root.info(
+      'Using vcpkg installed directory: ${vcpkgInstalledDir.path}',
+    );
+
+    cmakeArgs.addAll([
+      '-DCMAKE_TOOLCHAIN_FILE='
+          '$vcpkgRoot/scripts/buildsystems/vcpkg.cmake',
+      '-DVCPKG_TARGET_TRIPLET=x64-windows',
+      '-DVCPKG_HOST_TRIPLET=x64-windows',
+      '-DVCPKG_INSTALLED_DIR=${vcpkgInstalledDir.path}',
+    ]);
+  }
+  await _runCmakeConfigure(
+    buildDir: buildDir,
+    cmakeArgs: cmakeArgs,
+    environment: buildEnvironment,
+  );
 
   Logger.root.info('Building TDLib target tdjson');
-  await _run('cmake', [
-    '--build',
-    buildDir.path,
-    '--target',
-    'tdjson',
-    '--parallel',
-    _parallelism().toString(),
-  ]);
+  await _run(
+    'cmake',
+    [
+      '--build',
+      buildDir.path,
+      '--target',
+      'tdjson',
+      '--parallel',
+      _parallelism().toString(),
+    ],
+    environment: buildEnvironment,
+  );
 
   final builtLib = _findBuiltLibrary(buildDir, libName);
   if (builtLib == null) {
@@ -179,11 +251,211 @@ Future<File> _buildTdlibWithCMake({
   return _copyToHookOutput(input, builtLib, libName);
 }
 
+Future<Map<String, String>> _windowsMsvcEnvironment() async {
+  final clPath = _findExecutableOnWindows('cl.exe');
+
+  if (clPath == null) {
+    throw StateError(
+      'cl.exe was not found on PATH. Run the build from an MSVC environment.',
+    );
+  }
+
+  final normalized = clPath.replaceAll('/', r'\');
+  final marker = r'\VC\Tools\MSVC\';
+  final markerIndex = normalized.toLowerCase().indexOf(
+    marker.toLowerCase(),
+  );
+
+  if (markerIndex == -1) {
+    throw StateError(
+      'Could not derive the Visual Studio installation from $clPath.',
+    );
+  }
+
+  final visualStudioRoot = normalized.substring(0, markerIndex);
+  final vcvarsPath = [
+    visualStudioRoot,
+    'VC',
+    'Auxiliary',
+    'Build',
+    'vcvars64.bat',
+  ].join(r'\');
+
+  if (!File(vcvarsPath).existsSync()) {
+    throw StateError('vcvars64.bat was not found at $vcvarsPath.');
+  }
+
+  Logger.root.info('Loading MSVC environment from $vcvarsPath');
+
+  final vcvarsFile = File(vcvarsPath);
+
+  final result = await Process.run(
+    'cmd.exe',
+    [
+      '/d',
+      '/c',
+      'call vcvars64.bat >nul && set',
+    ],
+    workingDirectory: vcvarsFile.parent.path,
+    runInShell: false,
+  );
+
+  if (result.exitCode != 0) {
+    throw ProcessException(
+      'cmd.exe',
+      [
+        '/d',
+        '/c',
+        'call vcvars64.bat >nul && set',
+      ],
+      'Failed to load the MSVC environment.\n'
+      'vcvars directory: ${vcvarsFile.parent.path}\n'
+      'stdout:\n${result.stdout}\n'
+      'stderr:\n${result.stderr}',
+      result.exitCode,
+    );
+  }
+
+  final environment = <String, String>{
+    ...Platform.environment,
+  };
+
+  for (final line in result.stdout.toString().split(RegExp(r'\r?\n'))) {
+    final separator = line.indexOf('=');
+
+    if (separator <= 0) {
+      continue;
+    }
+
+    final name = line.substring(0, separator);
+    final value = line.substring(separator + 1);
+    environment[name] = value;
+  }
+
+  Logger.root.info(
+    'Loaded MSVC LIB environment: '
+    '${environment.containsKey('LIB')}',
+  );
+
+  return environment;
+}
+
+String? _findExecutableOnWindows(String executable) {
+  final result = Process.runSync(
+    'where.exe',
+    [executable],
+    runInShell: false,
+  );
+
+  if (result.exitCode != 0) {
+    return null;
+  }
+
+  for (final line in result.stdout.toString().split(RegExp(r'\r?\n'))) {
+    final path = line.trim();
+
+    if (path.isNotEmpty && File(path).existsSync()) {
+      return path;
+    }
+  }
+
+  return null;
+}
+
+String? _resolveVcpkgRoot(HookInput input) {
+  final define = input.userDefines['vcpkg_root'];
+  if (define is String && define.isNotEmpty) {
+    return define;
+  }
+
+  final environmentRoot = Platform.environment['VCPKG_ROOT'];
+  if (environmentRoot != null && environmentRoot.isNotEmpty) {
+    return environmentRoot;
+  }
+
+  if (Platform.isWindows) {
+    final repositoryVcpkg = Directory.fromUri(
+      input.packageRoot.resolve('vcpkg/'),
+    );
+
+    final repoExecutable = File(
+      '${repositoryVcpkg.path}${Platform.pathSeparator}vcpkg.exe',
+    );
+
+    final repoToolchain = File(
+      '${repositoryVcpkg.path}'
+      '${Platform.pathSeparator}scripts'
+      '${Platform.pathSeparator}buildsystems'
+      '${Platform.pathSeparator}vcpkg.cmake',
+    );
+
+    if (repoExecutable.existsSync() && repoToolchain.existsSync()) {
+      Logger.root.info(
+        'Resolved repository vcpkg: ${repositoryVcpkg.path}',
+      );
+      return repositoryVcpkg.path;
+    }
+
+    String? vsFallback;
+    final result = Process.runSync(
+      'where.exe',
+      ['vcpkg.exe'],
+      runInShell: true,
+    );
+
+    if (result.exitCode == 0) {
+      final candidates = result.stdout
+          .toString()
+          .split(RegExp(r'\r?\n'))
+          .map((path) => path.trim())
+          .where((path) => path.isNotEmpty);
+
+      for (final candidate in candidates) {
+        final executable = File(candidate);
+        if (!executable.existsSync()) {
+          continue;
+        }
+
+        final root = executable.parent;
+
+        if (root.path.contains('Microsoft Visual Studio')) {
+          if (vsFallback == null) {
+            vsFallback = root.path;
+          }
+          continue;
+        }
+
+        final toolchain = File(
+          '${root.path}'
+          '${Platform.pathSeparator}scripts'
+          '${Platform.pathSeparator}buildsystems'
+          '${Platform.pathSeparator}vcpkg.cmake',
+        );
+
+        if (toolchain.existsSync()) {
+          Logger.root.info(
+            'Resolved vcpkg from PATH: ${root.path}',
+          );
+          return root.path;
+        }
+      }
+    }
+
+    if (vsFallback != null) {
+      Logger.root.info(
+        'Resolved vcpkg from PATH (VS fallback): ${vsFallback}',
+      );
+      return vsFallback;
+    }
+  }
+
+  return null;
+}
+
 String? _resolveNdkPath(HookInput input) {
   final cCompiler = input.config.code.cCompiler;
   if (cCompiler == null) return null;
 
-  // Compiler path: /path/to/ndk/<version>/toolchains/llvm/prebuilt/<host>/bin/clang
   final compilerPath = cCompiler.compiler.toFilePath();
   final toolchainsIndex = compilerPath.indexOf('/toolchains/');
   if (toolchainsIndex > 0) {
@@ -223,6 +495,9 @@ bool _canBuildOnHost(OS targetOS, Architecture targetArch) {
     'windows' => OS.windows,
     _ => null,
   };
+  if (targetOS == OS.iOS) {
+    return hostOS == OS.macOS;
+  }
   return targetOS == hostOS && targetArch == _hostArchitecture();
 }
 
@@ -235,17 +510,58 @@ Architecture? _hostArchitecture() {
   return null;
 }
 
+Future<void> _runCmakeConfigure({
+  required Directory buildDir,
+  required List<String> cmakeArgs,
+  Map<String, String>? environment,
+}) async {
+  try {
+    await _run(
+      'cmake',
+      cmakeArgs,
+      environment: environment,
+    );
+  } on ProcessException catch (error) {
+    final details = error.toString();
+
+    if (!details.contains('does not match the source')) {
+      rethrow;
+    }
+
+    Logger.root.warning(
+      'CMake cache source mismatch detected; '
+      'clearing ${buildDir.path} and retrying.',
+    );
+
+    if (buildDir.existsSync()) {
+      buildDir.deleteSync(recursive: true);
+    }
+
+    buildDir.createSync(recursive: true);
+
+    await _run(
+      'cmake',
+      cmakeArgs,
+      environment: environment,
+    );
+  }
+}
+
 Future<void> _run(
   String executable,
   List<String> arguments, {
   String? workingDirectory,
+  Map<String, String>? environment,
 }) async {
   final result = await Process.run(
     executable,
     arguments,
     workingDirectory: workingDirectory,
+    environment: environment,
+    includeParentEnvironment: true,
     runInShell: Platform.isWindows,
   );
+
   if (result.exitCode != 0) {
     throw ProcessException(
       executable,
@@ -292,3 +608,7 @@ String _nativeDir(OS os, Architecture arch) => switch (os) {
   OS.windows => 'native/windows-x64',
   _ => 'native/other',
 };
+
+Directory _cacheRoot(String key) => Directory.fromUri(
+  Directory.current.uri.resolve('.dart_tool/tdlib-cmake-cache/$key'),
+);
