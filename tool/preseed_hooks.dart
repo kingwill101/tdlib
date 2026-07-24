@@ -53,16 +53,24 @@ Future<void> main(List<String> args) async {
   stdout.writeln('Hook input: ${inputFile.path}');
   stdout.writeln('Hook output: ${File.fromUri(hookDir.uri.resolve('output.json')).path}');
 
-  final result = await Process.run(
-    'dart',
+  final process = await Process.start(
+    Platform.resolvedExecutable,
     ['run', 'hook/build.dart', '--config', inputFile.path],
     runInShell: Platform.isWindows,
-    environment: Map<String, String>.from(Platform.environment),
+    includeParentEnvironment: true,
   );
-  stdout.write(result.stdout);
-  stderr.write(result.stderr);
-  if (result.exitCode != 0) {
-    throw ProcessException('dart', ['run', 'hook/build.dart', '--config', inputFile.path], 'Hook build failed', result.exitCode);
+  final stdoutFuture = stdout.addStream(process.stdout);
+  final stderrFuture = stderr.addStream(process.stderr);
+  final exitCode = await process.exitCode;
+  await stdoutFuture;
+  await stderrFuture;
+  if (exitCode != 0) {
+    throw ProcessException(
+      Platform.resolvedExecutable,
+      ['run', 'hook/build.dart', '--config', inputFile.path],
+      'Hook build failed',
+      exitCode,
+    );
   }
 }
 
