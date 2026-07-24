@@ -157,8 +157,8 @@ jobs:
       CMAKE_C_COMPILER_LAUNCHER: sccache
       CMAKE_CXX_COMPILER_LAUNCHER: sccache
 
-      # This must be visible to the Dart build-hook process.
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_INSTALLED_DIR: ${{ github.workspace }}/.dart_tool/tdlib-cmake-cache/windows-x64/vcpkg_installed
       VCPKG_DEFAULT_TRIPLET: x64-windows
       VCPKG_DEFAULT_HOST_TRIPLET: x64-windows
 
@@ -186,18 +186,19 @@ jobs:
           restore-keys: |
             dart-pub-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Set up vcpkg
+      - name: Set up vcpkg and install dependencies
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgDirectory: ${{ env.VCPKG_ROOT }}
           vcpkgGitCommitId: b2cb0da531c2f1f740045bfe7c4dac59f0b2b69c
-          runVcpkgInstall: false
+          vcpkgJsonGlob: 'vcpkg.json'
+          runVcpkgInstall: true
 
       - name: Configure C/C++ compiler cache
         id: sccache
         uses: mozilla-actions/sccache-action@v0.0.10
 
-      - name: Verify native build tools
+      - name: Verify native build tools and dependencies
         shell: pwsh
         run: |
           cmake --version
@@ -206,27 +207,39 @@ jobs:
           cl
           sccache --version
 
-          Write-Host "VCPKG_ROOT = $env:VCPKG_ROOT"
-          Write-Host "VCPKG_DEFAULT_TRIPLET = $env:VCPKG_DEFAULT_TRIPLET"
-          Write-Host "CMAKE_GENERATOR = $env:CMAKE_GENERATOR"
-
           $vcpkgExe = Join-Path $env:VCPKG_ROOT "vcpkg.exe"
-
-          if (-not (Test-Path $vcpkgExe)) {
-            throw "vcpkg.exe was not found at: $vcpkgExe"
-          }
-
-          & $vcpkgExe version
-
           $toolchainFile = Join-Path `
             $env:VCPKG_ROOT `
             "scripts/buildsystems/vcpkg.cmake"
 
-          if (-not (Test-Path $toolchainFile)) {
-            throw "vcpkg CMake toolchain was not found at: $toolchainFile"
+          $zlibHeader = Join-Path `
+            $env:VCPKG_INSTALLED_DIR `
+            "x64-windows/include/zlib.h"
+
+          $opensslHeader = Join-Path `
+            $env:VCPKG_INSTALLED_DIR `
+            "x64-windows/include/openssl/ssl.h"
+
+          if (-not (Test-Path $vcpkgExe)) {
+            throw "vcpkg.exe was not found: $vcpkgExe"
           }
 
-          Write-Host "vcpkg toolchain = $toolchainFile"
+          if (-not (Test-Path $toolchainFile)) {
+            throw "vcpkg toolchain was not found: $toolchainFile"
+          }
+
+          if (-not (Test-Path $zlibHeader)) {
+            throw "zlib was not installed: $zlibHeader"
+          }
+
+          if (-not (Test-Path $opensslHeader)) {
+            throw "OpenSSL was not installed: $opensslHeader"
+          }
+
+          & $vcpkgExe version
+
+          Write-Host "VCPKG_ROOT = $env:VCPKG_ROOT"
+          Write-Host "VCPKG_INSTALLED_DIR = $env:VCPKG_INSTALLED_DIR"
 
       - name: Resolve Dart dependencies
         run: dart pub get

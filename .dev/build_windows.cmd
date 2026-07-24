@@ -5,7 +5,7 @@ set "PROJECT_DIR=%~dp0.."
 set "TOOLS_DIR=%PROJECT_DIR%\tools"
 set "VCPKG_ROOT=%USERPROFILE%\vcpkg"
 set "VCPKG_TARGET_TRIPLET=x64-windows"
-set "VCPKG_INSTALLED_DIR=%PROJECT_DIR%\.dart_tool\tdlib-cmake-cache\windows-x64\vcpkg_installed"
+set "VCPKG_INSTALLED_DIR=%VCPKG_ROOT%\installed"
 set "PATH=%TOOLS_DIR%;%VCPKG_ROOT%;C:\tools\dart-sdk\bin;C:\Program Files\CMake\bin;C:\ProgramData\chocolatey\bin;%PATH%"
 
 echo === Checking tools ===
@@ -24,8 +24,8 @@ if not exist "%VCPKG_ROOT%\vcpkg.exe" (
 
 echo === Installing vcpkg dependencies (manifest mode) ===
 cd /d "%PROJECT_DIR%"
-if not exist "%VCPKG_INSTALLED_DIR%"\installed\x64-windows\include\zlib.h (
-    "%VCPKG_ROOT%\vcpkg.exe" install --x-install-root "%VCPKG_INSTALLED_DIR%" || exit /b 1
+if not exist "%VCPKG_ROOT%\installed\x64-windows\include\zlib.h" (
+    "%VCPKG_ROOT%\vcpkg.exe" install || exit /b 1
 ) else (
     echo vcpkg dependencies already installed.
 )

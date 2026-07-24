@@ -4,7 +4,7 @@ call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\B
 set "PROJECT_DIR=%~dp0.."
 set "VCPKG_ROOT=%USERPROFILE%\vcpkg"
 set "VCPKG_TARGET_TRIPLET=x64-windows"
-set "VCPKG_INSTALLED_DIR=%PROJECT_DIR%\.dart_tool\tdlib-cmake-cache\windows-x64\vcpkg_installed"
+set "VCPKG_INSTALLED_DIR=%VCPKG_ROOT%\installed"
 
 if not exist "%VCPKG_ROOT%\vcpkg.exe" (
     echo Bootstrapping vcpkg at %VCPKG_ROOT%...
@@ -16,7 +16,7 @@ if not exist "%VCPKG_ROOT%\vcpkg.exe" (
 
 echo === Installing vcpkg dependencies (manifest mode) ===
 cd /d "%PROJECT_DIR%"
-"%VCPKG_ROOT%\vcpkg.exe" install --x-install-root "%VCPKG_INSTALLED_DIR%"
+"%VCPKG_ROOT%\vcpkg.exe" install
 if errorlevel 1 exit /b 1
 
 echo === vcpkg setup complete ===

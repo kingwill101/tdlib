@@ -199,7 +199,6 @@ Future<File> _buildTdlibWithCMake({
     cmakeArgs.addAll([
       '-DCMAKE_TOOLCHAIN_FILE=$vcpkgRoot/scripts/buildsystems/vcpkg.cmake',
       '-DVCPKG_TARGET_TRIPLET=${Platform.environment['VCPKG_TARGET_TRIPLET'] ?? 'x64-windows'}',
-      '-DVCPKG_INSTALLED_DIR=${workingRoot.path}/vcpkg_installed',
     ]);
   }
   await _runCmakeConfigure(buildDir: buildDir, cmakeArgs: cmakeArgs);
