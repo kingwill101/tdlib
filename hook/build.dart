@@ -192,6 +192,7 @@ Future<File> _buildTdlibWithCMake({
   ];
   if (targetOS == OS.windows) {
     cmakeArgs.addAll(['-G', 'Ninja']);
+
     final vcpkgRoot = _resolveVcpkgRoot(input);
     if (vcpkgRoot == null || vcpkgRoot.isEmpty) {
       throw UnsupportedError(
@@ -200,9 +201,22 @@ Future<File> _buildTdlibWithCMake({
         'hook user define.',
       );
     }
+
+    final vcpkgInstalledDir = Directory(
+      '${workingRoot.path}${Platform.pathSeparator}vcpkg_installed',
+    );
+
+    Logger.root.info('Using vcpkg root: $vcpkgRoot');
+    Logger.root.info(
+      'Using vcpkg installed directory: ${vcpkgInstalledDir.path}',
+    );
+
     cmakeArgs.addAll([
-      '-DCMAKE_TOOLCHAIN_FILE=$vcpkgRoot/scripts/buildsystems/vcpkg.cmake',
-      '-DVCPKG_TARGET_TRIPLET=${Platform.environment['VCPKG_TARGET_TRIPLET'] ?? 'x64-windows'}',
+      '-DCMAKE_TOOLCHAIN_FILE='
+          '$vcpkgRoot/scripts/buildsystems/vcpkg.cmake',
+      '-DVCPKG_TARGET_TRIPLET=x64-windows',
+      '-DVCPKG_HOST_TRIPLET=x64-windows',
+      '-DVCPKG_INSTALLED_DIR=${vcpkgInstalledDir.path}',
     ]);
   }
   await _runCmakeConfigure(
@@ -357,12 +371,8 @@ String? _resolveVcpkgRoot(HookInput input) {
   }
 
   if (Platform.isWindows) {
-    Logger.root.info(
-      'Searching for vcpkg from ${Directory.current.path}',
-    );
-
-    final repositoryVcpkg = Directory(
-      '${Directory.current.path}${Platform.pathSeparator}vcpkg',
+    final repositoryVcpkg = Directory.fromUri(
+      input.packageRoot.resolve('vcpkg/'),
     );
 
     final repoExecutable = File(
