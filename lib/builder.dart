@@ -77,11 +77,6 @@ Directory _findPackageRoot(String schemaPath) {
       return directory;
     }
 
-    final workspacePackage = Directory('${directory.path}/pkgs/tdlib-dart');
-    if (File('${workspacePackage.path}/$schemaPath').existsSync()) {
-      return workspacePackage;
-    }
-
     final parent = directory.parent;
     if (parent.path == directory.path) break;
     directory = parent;

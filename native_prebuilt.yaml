@@ -3,7 +3,7 @@ package: tdlib
 asset_name: src/tdlib.g.dart
 library_stem: tdjson
 release:
-  repository: kingwill101/tdlib-dart
+  repository: kingwill101/tdlib
   tag: tdlib-v1.8.64
 artifacts:
   android-arm64:
