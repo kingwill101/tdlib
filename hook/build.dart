@@ -270,22 +270,29 @@ Future<Map<String, String>> _windowsMsvcEnvironment() async {
 
   Logger.root.info('Loading MSVC environment from $vcvarsPath');
 
+  final vcvarsFile = File(vcvarsPath);
+
   final result = await Process.run(
     'cmd.exe',
     [
       '/d',
-      '/s',
       '/c',
-      'call "$vcvarsPath" >nul && set',
+      'call vcvars64.bat >nul && set',
     ],
+    workingDirectory: vcvarsFile.parent.path,
     runInShell: false,
   );
 
   if (result.exitCode != 0) {
     throw ProcessException(
       'cmd.exe',
-      ['/c', 'call "$vcvarsPath" && set'],
+      [
+        '/d',
+        '/c',
+        'call vcvars64.bat >nul && set',
+      ],
       'Failed to load the MSVC environment.\n'
+      'vcvars directory: ${vcvarsFile.parent.path}\n'
       'stdout:\n${result.stdout}\n'
       'stderr:\n${result.stderr}',
       result.exitCode,
