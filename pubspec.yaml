@@ -11,7 +11,9 @@ dependencies:
   ffi: ^2.2.0
   meta: ^1.15.0
   native_prebuilt:
-    path: ../native_prebuilt
+    git:
+      url: https://github.com/kingwill101/native_prebuilt.git
+      ref: feat/build-pipeline
   rxdart: ^0.28.0
   code_assets: ^1.2.0
   hooks: ^2.0.0
