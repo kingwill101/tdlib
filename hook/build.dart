@@ -357,6 +357,10 @@ String? _resolveVcpkgRoot(HookInput input) {
   }
 
   if (Platform.isWindows) {
+    Logger.root.info(
+      'Searching for vcpkg from ${Directory.current.path}',
+    );
+
     final repositoryVcpkg = Directory(
       '${Directory.current.path}${Platform.pathSeparator}vcpkg',
     );
@@ -379,6 +383,7 @@ String? _resolveVcpkgRoot(HookInput input) {
       return repositoryVcpkg.path;
     }
 
+    String? vsFallback;
     final result = Process.runSync(
       'where.exe',
       ['vcpkg.exe'],
@@ -399,6 +404,14 @@ String? _resolveVcpkgRoot(HookInput input) {
         }
 
         final root = executable.parent;
+
+        if (root.path.contains('Microsoft Visual Studio')) {
+          if (vsFallback == null) {
+            vsFallback = root.path;
+          }
+          continue;
+        }
+
         final toolchain = File(
           '${root.path}'
           '${Platform.pathSeparator}scripts'
@@ -413,6 +426,13 @@ String? _resolveVcpkgRoot(HookInput input) {
           return root.path;
         }
       }
+    }
+
+    if (vsFallback != null) {
+      Logger.root.info(
+        'Resolved vcpkg from PATH (VS fallback): ${vsFallback}',
+      );
+      return vsFallback;
     }
   }
 
