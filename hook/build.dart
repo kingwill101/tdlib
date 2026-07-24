@@ -197,7 +197,7 @@ Future<File> _buildTdlibWithCMake({
       '-DVCPKG_INSTALLED_DIR=${workingRoot.path}/vcpkg_installed',
     ]);
   }
-  await _run('cmake', cmakeArgs);
+  await _runCmakeConfigure(buildDir: buildDir, cmakeArgs: cmakeArgs);
 
   Logger.root.info('Building TDLib target tdjson');
   await _run('cmake', [
@@ -274,6 +274,29 @@ Architecture? _hostArchitecture() {
   if (abi.contains('ia32')) return Architecture.ia32;
   if (abi.contains('x64')) return Architecture.x64;
   return null;
+}
+
+Future<void> _runCmakeConfigure({
+  required Directory buildDir,
+  required List<String> cmakeArgs,
+}) async {
+  try {
+    await _run('cmake', cmakeArgs);
+  } on ProcessException catch (error) {
+    final details = error.message;
+    if (!details.contains('does not match the source')) {
+      rethrow;
+    }
+
+    Logger.root.warning(
+      'CMake cache source mismatch detected; clearing ${buildDir.path} and retrying.',
+    );
+    if (buildDir.existsSync()) {
+      buildDir.deleteSync(recursive: true);
+    }
+    buildDir.createSync(recursive: true);
+    await _run('cmake', cmakeArgs);
+  }
 }
 
 Future<void> _run(

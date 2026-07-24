@@ -58,6 +58,7 @@ Future<void> main(List<String> args) async {
     ['run', 'hook/build.dart', '--config', inputFile.path],
     runInShell: Platform.isWindows,
     includeParentEnvironment: true,
+    environment: Map<String, String>.from(Platform.environment),
   );
   final stdoutFuture = stdout.addStream(process.stdout);
   final stderrFuture = stderr.addStream(process.stderr);
