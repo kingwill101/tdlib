@@ -82,12 +82,29 @@ BuildInputBuilder _buildInput({
   required Architecture targetArch,
   required ArgResults options,
 }) {
+  final vcpkgRoot = Platform.environment['VCPKG_ROOT'];
+  if (targetOS == OS.windows && (vcpkgRoot == null || vcpkgRoot.isEmpty)) {
+    throw StateError('VCPKG_ROOT must be set before prebuilding Windows assets.');
+  }
+
+  final userDefines = targetOS == OS.windows
+      ? PackageUserDefines(
+          workspacePubspec: PackageUserDefinesSource(
+            defines: {
+              'vcpkg_root': vcpkgRoot,
+            },
+            basePath: Directory.current.uri,
+          ),
+        )
+      : null;
+
   final builder = BuildInputBuilder()
     ..setupShared(
       packageRoot: Directory.current.uri,
       packageName: 'tdlib',
       outputFile: outputFile,
       outputDirectoryShared: sharedRoot,
+      userDefines: userDefines,
     )
     ..setupBuildInput();
   builder.config.setupBuild(linkingEnabled: false);

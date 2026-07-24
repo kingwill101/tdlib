@@ -185,7 +185,7 @@ Future<File> _buildTdlibWithCMake({
     '-DCMAKE_BUILD_TYPE=Release',
   ];
   if (targetOS == OS.windows) {
-    final vcpkgRoot = Platform.environment['VCPKG_ROOT'];
+    final vcpkgRoot = _resolveVcpkgRoot(input);
     if (vcpkgRoot == null || vcpkgRoot.isEmpty) {
       throw UnsupportedError(
         'Windows source builds require VCPKG_ROOT to be set and vcpkg to be installed.',
@@ -216,6 +216,14 @@ Future<File> _buildTdlibWithCMake({
     );
   }
   return _copyToHookOutput(input, builtLib, libName);
+}
+
+String? _resolveVcpkgRoot(HookInput input) {
+  final define = input.userDefines.path('vcpkg_root');
+  if (define != null) {
+    return define.toFilePath();
+  }
+  return Platform.environment['VCPKG_ROOT'];
 }
 
 String? _resolveNdkPath(HookInput input) {
@@ -283,7 +291,7 @@ Future<void> _runCmakeConfigure({
   try {
     await _run('cmake', cmakeArgs);
   } on ProcessException catch (error) {
-    final details = error.message;
+    final details = error.toString();
     if (!details.contains('does not match the source')) {
       rethrow;
     }
