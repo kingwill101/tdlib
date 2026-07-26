@@ -77,7 +77,7 @@ build:
           generator: Ninja
           definitions:
             CMAKE_BUILD_TYPE: Release
-            CMAKE_TOOLCHAIN_FILE: VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
+            CMAKE_TOOLCHAIN_FILE: TDLIB_VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
             VCPKG_TARGET_TRIPLET: x64-windows
 
         - id: build
@@ -282,6 +282,7 @@ build:
           generator: Ninja
           definitions:
             TD_GENERATE_SOURCE_FILES: ON
+            CMAKE_MAKE_PROGRAM: /opt/homebrew/bin/ninja
 
         - id: build_prepare
           type: cmake_build
@@ -310,6 +311,8 @@ build:
           toolchain_file: CMake/iOS.cmake
           definitions:
             CMAKE_BUILD_TYPE: Release
+            CMAKE_INSTALL_PREFIX: ../install
+            CMAKE_MAKE_PROGRAM: /opt/homebrew/bin/ninja
             IOS_PLATFORM: OS
             IOS_DEPLOYMENT_TARGET: '17'
             OPENSSL_FOUND: '1'

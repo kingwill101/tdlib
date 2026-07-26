@@ -114,7 +114,8 @@ StepBuildRecipe _windowsRecipe = StepBuildRecipe(
       generator: 'Ninja',
       defines: {
         'CMAKE_BUILD_TYPE': 'Release',
-        'CMAKE_TOOLCHAIN_FILE': r'VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake',
+        'CMAKE_TOOLCHAIN_FILE':
+            r'TDLIB_VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake',
         'VCPKG_TARGET_TRIPLET': 'x64-windows',
       },
     ),
@@ -177,7 +178,10 @@ StepBuildRecipe _iosRecipe = StepBuildRecipe(
       sourceDirectory: '.',
       buildDirectory: 'native-build',
       generator: 'Ninja',
-      defines: {'TD_GENERATE_SOURCE_FILES': 'ON'},
+      defines: {
+        'TD_GENERATE_SOURCE_FILES': 'ON',
+        'CMAKE_MAKE_PROGRAM': '/opt/homebrew/bin/ninja',
+      },
     ),
     CmakeBuildStep(
       buildDirectory: 'native-build',
@@ -203,6 +207,8 @@ StepBuildRecipe _iosRecipe = StepBuildRecipe(
       toolchainFile: 'CMake/iOS.cmake',
       defines: {
         'CMAKE_BUILD_TYPE': 'Release',
+        'CMAKE_INSTALL_PREFIX': '../install',
+        'CMAKE_MAKE_PROGRAM': '/opt/homebrew/bin/ninja',
         'IOS_PLATFORM': 'OS',
         'IOS_DEPLOYMENT_TARGET': '17',
         'OPENSSL_FOUND': '1',
