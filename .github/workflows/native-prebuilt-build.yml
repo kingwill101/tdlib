@@ -18,7 +18,7 @@ jobs:
       PUB_CACHE: ${{ github.workspace }}/.pub-cache
       SCCACHE_GHA_ENABLED: 'true'
       SCCACHE_GHA_VERSION: tdlib-v1
-      TDLIB_VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
       VCPKG_INSTALLED_DIR: ${{ github.workspace }}/.dart_tool/tdlib-cmake-cache/windows-x64/vcpkg_installed
       VCPKG_DEFAULT_TRIPLET: x64-windows
       VCPKG_DEFAULT_HOST_TRIPLET: x64-windows
@@ -69,7 +69,7 @@ jobs:
         if: inputs.runner == 'windows-latest'
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgDirectory: ${{ env.TDLIB_VCPKG_ROOT }}
+          vcpkgDirectory: ${{ env.VCPKG_ROOT }}
           vcpkgGitCommitId: b2cb0da531c2f1f740045bfe7c4dac59f0b2b69c
           vcpkgJsonGlob: 'vcpkg.json'
           runVcpkgInstall: true
@@ -95,9 +95,9 @@ jobs:
           cl
           sccache --version
 
-          $vcpkgExe = Join-Path $env:TDLIB_VCPKG_ROOT "vcpkg.exe"
+          $vcpkgExe = Join-Path $env:VCPKG_ROOT "vcpkg.exe"
           $toolchainFile = Join-Path `
-            $env:TDLIB_VCPKG_ROOT `
+            $env:VCPKG_ROOT `
             "scripts/buildsystems/vcpkg.cmake"
 
           $zlibHeader = Join-Path `
@@ -126,7 +126,7 @@ jobs:
 
           & $vcpkgExe version
 
-          Write-Host "TDLIB_VCPKG_ROOT = $env:TDLIB_VCPKG_ROOT"
+          Write-Host "VCPKG_ROOT = $env:VCPKG_ROOT"
           Write-Host "VCPKG_INSTALLED_DIR = $env:VCPKG_INSTALLED_DIR"
 
       - name: Resolve Dart dependencies

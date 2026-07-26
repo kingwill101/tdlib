@@ -114,9 +114,10 @@ StepBuildRecipe _windowsRecipe = StepBuildRecipe(
       generator: 'Ninja',
       defines: {
         'CMAKE_BUILD_TYPE': 'Release',
-        'CMAKE_TOOLCHAIN_FILE':
-            r'TDLIB_VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake',
+        'CMAKE_TOOLCHAIN_FILE': r'VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake',
         'VCPKG_TARGET_TRIPLET': 'x64-windows',
+        'VCPKG_HOST_TRIPLET': 'x64-windows',
+        'VCPKG_INSTALLED_DIR': 'VCPKG_INSTALLED_DIR',
       },
     ),
     CmakeBuildStep(buildDirectory: 'build', targets: ['tdjson']),
