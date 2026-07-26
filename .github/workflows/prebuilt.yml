@@ -324,7 +324,7 @@ jobs:
             dart-pub-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Install native tools
-        run: brew install gperf
+        run: brew install gperf ninja
 
       - name: Configure C/C++ compiler cache
         uses: mozilla-actions/sccache-action@v0.0.10

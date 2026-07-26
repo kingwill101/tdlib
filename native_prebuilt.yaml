@@ -279,6 +279,7 @@ build:
           type: cmake_configure
           source_directory: .
           build_directory: native-build
+          generator: Ninja
           definitions:
             TD_GENERATE_SOURCE_FILES: ON
 
@@ -305,6 +306,7 @@ build:
           type: cmake_configure
           source_directory: .
           build_directory: build
+          generator: Ninja
           toolchain_file: CMake/iOS.cmake
           definitions:
             CMAKE_BUILD_TYPE: Release
