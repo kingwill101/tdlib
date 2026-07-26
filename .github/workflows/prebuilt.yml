@@ -297,7 +297,7 @@ jobs:
 
       - name: Show compiler cache statistics
         if: always()
-        run: "${SCCACHE_PATH}" --show-stats
+        run: "${SCCACHE_PATH} --show-stats"
 
       - uses: actions/upload-artifact@v4
         with:
