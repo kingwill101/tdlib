@@ -298,8 +298,8 @@ build:
         - id: build_openssl
           type: command
           commands:
-            - make
-            - OpenSSL-iOS
+            - - make
+              - OpenSSL-iOS
           working_directory: python-apple-support
 
         - id: configure_tdlib
@@ -323,10 +323,10 @@ build:
         - id: fix_install_name
           type: command
           commands:
-            - install_name_tool
-            - -id
-            - '@rpath/libtdjson.dylib'
-            - install/lib/libtdjson.dylib
+            - - install_name_tool
+              - -id
+              - '@rpath/libtdjson.dylib'
+              - install/lib/libtdjson.dylib
 
         - id: export_tdjson
           type: export_artifact
