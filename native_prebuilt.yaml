@@ -281,6 +281,7 @@ build:
           build_directory: "{{ work }}/native-build"
           generator: Ninja
           definitions:
+            CMAKE_MAKE_PROGRAM: "{{ env.NINJA_PATH | default: 'ninja' }}"
             TD_GENERATE_SOURCE_FILES: ON
 
         - id: build_prepare
@@ -318,6 +319,7 @@ build:
           generator: Ninja
           toolchain_file: CMake/iOS.cmake
           definitions:
+            CMAKE_MAKE_PROGRAM: "{{ env.NINJA_PATH | default: 'ninja' }}"
             CMAKE_BUILD_TYPE: Release
             CMAKE_INSTALL_PREFIX: "{{ work }}/install"
             IOS_PLATFORM: OS
