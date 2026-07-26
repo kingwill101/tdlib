@@ -11,8 +11,7 @@
 library;
 
 import 'package:native_prebuilt/native_prebuilt.dart';
-import 'package:tdlib/src/hook/tdlib_project.dart';
 
 Future<void> main(List<String> args) {
-  return runNativePrebuiltCli(args, project: tdlibProject);
+  return runNativePrebuiltCli(args);
 }

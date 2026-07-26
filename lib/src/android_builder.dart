@@ -252,7 +252,7 @@ String opensslTarget(String abi) => switch (abi) {
   'arm64-v8a' => 'android-arm64',
   'armeabi-v7a' => 'android-arm',
   'x86_64' => 'android-x86_64',
-  'x86' => 'android-x86',
+  'ia32' => 'android-ia32',
   _ => throw ArgumentError('Unsupported ABI: $abi'),
 };
 

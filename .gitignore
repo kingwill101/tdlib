@@ -94,3 +94,5 @@ example/README.md
 *.lib
 *.exe
 *.pdb
+built-library/android-arm64/native_prebuilt.json
+built-library/linux-x64/native_prebuilt.json

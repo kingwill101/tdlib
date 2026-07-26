@@ -87,19 +87,17 @@ That is useful when developing TDLib itself or when you need a local rebuild for
 This package uses `native_prebuilt` to generate release metadata and GitHub Actions scaffolding.
 
 ```bash
-dart run native_prebuilt workflow init --config native_prebuilt.yaml
+dart run native_prebuilt workflow init
 ```
 
 To regenerate the manifest after a release:
 
 ```bash
 dart run native_prebuilt manifest update \
-  --config native_prebuilt.yaml \
-  --output lib/src/hook/tdlib_prebuilts.g.dart \
-  --built-library-dir built-library \
-  --release-assets-dir release-assets \
   --tag tdlib-vX.Y.Z
 ```
+
+The command auto-finds `native_prebuilt.yaml`, writes `lib/src/hook/tdlib_prebuilts.g.dart`, and uses the sibling `built-library/` directory when TDLib build recipes are present.
 
 ## Development
 

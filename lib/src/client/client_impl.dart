@@ -17,6 +17,7 @@ final class ClientImpl implements Client {
 
   final PublishSubject<Event> _rawResultsSubject = PublishSubject<Event>();
 
+  // ignore: prefer_initializing_formals
   ClientImpl({required Platform platform}) : _platform = platform;
 
   @override

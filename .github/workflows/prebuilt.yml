@@ -75,23 +75,17 @@ jobs:
       - name: Resolve Dart dependencies
         run: dart pub get
 
-      - name: Build and test
-        run: dart test
+      - name: Build native artifacts
+        run: dart run native_prebuilt build --target linux-x64 --output built-library --from-source
 
       - name: Show compiler cache statistics
         if: always()
         run: "${SCCACHE_PATH} --show-stats"
 
-      - name: Stage built library
-        run: |
-          rm -rf built-library
-          mkdir -p built-library
-          cp -R .dart_tool/lib/. built-library/
-
       - uses: actions/upload-artifact@v4
         with:
           name: linux-built-library
-          path: built-library/
+          path: built-library/linux-x64/
           if-no-files-found: error
 
   build-macos:
@@ -128,23 +122,17 @@ jobs:
       - name: Resolve Dart dependencies
         run: dart pub get
 
-      - name: Build and test
-        run: dart test
+      - name: Build native artifacts
+        run: dart run native_prebuilt build --target macos-arm64 --output built-library --from-source
 
       - name: Show compiler cache statistics
         if: always()
         run: "${SCCACHE_PATH} --show-stats"
 
-      - name: Stage built library
-        run: |
-          rm -rf built-library
-          mkdir -p built-library
-          cp -R .dart_tool/lib/. built-library/
-
       - uses: actions/upload-artifact@v4
         with:
           name: macos-built-library
-          path: built-library/
+          path: built-library/macos-arm64/
           if-no-files-found: error
 
   build-windows:
@@ -242,43 +230,34 @@ jobs:
       - name: Resolve Dart dependencies
         run: dart pub get
 
-      - name: Build and test
-        run: dart test
+      - name: Build native artifacts
+        run: dart run native_prebuilt build --target windows-x64 --output built-library --from-source
 
       - name: Show compiler cache statistics
         if: ${{ always() && steps.sccache.outcome == 'success' }}
         shell: pwsh
         run: sccache --show-stats
 
-      - name: Stage built library
-        shell: pwsh
-        run: |
-          Remove-Item `
-            -Recurse `
-            -Force `
-            built-library `
-            -ErrorAction SilentlyContinue
-
-          New-Item `
-            -ItemType Directory `
-            -Force `
-            -Path built-library |
-            Out-Null
-
-          Copy-Item `
-            -Recurse `
-            -Force `
-            ".dart_tool/lib/*" `
-            built-library
-
       - uses: actions/upload-artifact@v4
         with:
           name: windows-built-library
-          path: built-library/
+          path: built-library/windows-x64/
           if-no-files-found: error
 
   build-android:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: android-arm64
+            artifact: android-built-library-arm64
+          - target: android-arm
+            artifact: android-built-library-arm
+          - target: android-x64
+            artifact: android-built-library-x64
+          - target: android-ia32
+            artifact: android-built-library-ia32
 
     steps:
       - uses: actions/checkout@v4
@@ -298,14 +277,7 @@ jobs:
       - name: Install native toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            build-essential \
-            clang \
-            cmake \
-            gperf \
-            libclang-dev \
-            ninja-build \
-            pkg-config
+          sudo apt-get install -y --no-install-recommends             build-essential             clang             cmake             gperf             libclang-dev             ninja-build             pkg-config
 
       - name: Configure C/C++ compiler cache
         uses: mozilla-actions/sccache-action@v0.0.10
@@ -320,47 +292,17 @@ jobs:
       - name: Resolve Dart dependencies
         run: dart pub get
 
-      - name: Build Android arm64
-        run: |
-          dart run tool/preseed_hooks.dart \
-            --target-os android \
-            --target-arch arm64 \
-            --android-ndk-api 30 \
-            --build-from-source
+      - name: Build native artifacts
+        run: dart run native_prebuilt build --target ${{ matrix.target }} --output built-library --from-source
 
       - name: Show compiler cache statistics
         if: always()
-        run: "${SCCACHE_PATH} --show-stats"
-
-      - name: Stage Android library
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          rm -rf built-library
-          mkdir -p built-library
-
-          ANDROID_LIBRARY="$(
-            find .dart_tool/hooks_runner/shared/tdlib \
-              -type f \
-              -path '*/artifacts/libtdjson.so' \
-              -print \
-              -quit
-          )"
-
-          if [[ -z "$ANDROID_LIBRARY" ]]; then
-            echo "No Android libtdjson.so was produced"
-            find .dart_tool -type f -name 'libtdjson*' -print
-            exit 1
-          fi
-
-          cp "$ANDROID_LIBRARY" built-library/libtdjson.so
-          file built-library/libtdjson.so
+        run: "${SCCACHE_PATH}" --show-stats
 
       - uses: actions/upload-artifact@v4
         with:
-          name: android-built-library
-          path: built-library/
+          name: ${{ matrix.artifact }}
+          path: built-library/${{ matrix.target }}/
           if-no-files-found: error
 
   build-ios:
@@ -397,49 +339,17 @@ jobs:
       - name: Resolve Dart dependencies
         run: dart pub get
 
-      - name: Build iOS arm64
-        run: |
-          dart run tool/preseed_hooks.dart \
-            --target-os ios \
-            --target-arch arm64 \
-            --ios-sdk iphoneos \
-            --ios-version 17 \
-            --build-from-source
+      - name: Build native artifacts
+        run: dart run native_prebuilt build --target ios-arm64 --output built-library --from-source
 
       - name: Show compiler cache statistics
         if: always()
         run: "${SCCACHE_PATH} --show-stats"
 
-      - name: Stage iOS library
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          rm -rf built-library
-          mkdir -p built-library
-
-          IOS_LIBRARY="$(
-            find .dart_tool/hooks_runner/shared/tdlib \
-              -type f \
-              -path '*/artifacts/libtdjson.dylib' \
-              -print \
-              -quit
-          )"
-
-          if [[ -z "$IOS_LIBRARY" ]]; then
-            echo "No iOS libtdjson.dylib was produced"
-            find .dart_tool -type f -name 'libtdjson*' -print
-            exit 1
-          fi
-
-          cp "$IOS_LIBRARY" built-library/libtdjson.dylib
-
-          xcrun vtool -show-build built-library/libtdjson.dylib
-
       - uses: actions/upload-artifact@v4
         with:
           name: ios-built-library
-          path: built-library/
+          path: built-library/ios-arm64/
           if-no-files-found: error
 
   update-manifest:
@@ -486,8 +396,23 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: android-built-library
+          name: android-built-library-arm64
           path: built-library/android-arm64/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-built-library-arm
+          path: built-library/android-arm/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-built-library-x64
+          path: built-library/android-x64/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-built-library-ia32
+          path: built-library/android-ia32/
 
       - uses: actions/download-artifact@v4
         with:

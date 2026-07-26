@@ -8,6 +8,7 @@ import 'package:code_assets/code_assets.dart';
 import 'package:native_prebuilt/native_prebuilt.dart';
 
 import 'package:tdlib/src/tdlib_source.dart';
+import 'tdlib_prebuilts.g.dart';
 
 /// The TDLib native project definition.
 ///
@@ -20,16 +21,55 @@ final tdlibProject = NativeProject(
     libraryStem: 'tdjson',
     linkMode: DynamicLoadingBundled(),
   ),
-  prebuilts: _prebuilts,
+  prebuilts: tdlibPrebuilts,
   sources: [_tdlibSource],
   build: NativeBuildDefinition(
-    recipes: {
-      OS.linux: _desktopRecipe,
-      OS.macOS: _desktopRecipe,
-      OS.windows: _windowsRecipe,
-      OS.android: _androidRecipe,
-      OS.iOS: _iosRecipe,
-    },
+    recipes: [
+      NativeTargetRecipe(
+        pattern: NativeTargetPattern(os: OS.linux),
+        recipe: _desktopRecipe,
+      ),
+      NativeTargetRecipe(
+        pattern: NativeTargetPattern(os: OS.macOS),
+        recipe: _desktopRecipe,
+      ),
+      NativeTargetRecipe(
+        pattern: NativeTargetPattern(os: OS.windows),
+        recipe: _windowsRecipe,
+      ),
+      NativeTargetRecipe(
+        pattern: NativeTargetPattern(
+          os: OS.android,
+          architecture: Architecture.arm,
+        ),
+        recipe: _androidRecipe(abi: 'armeabi-v7a'),
+      ),
+      NativeTargetRecipe(
+        pattern: NativeTargetPattern(
+          os: OS.android,
+          architecture: Architecture.arm64,
+        ),
+        recipe: _androidRecipe(abi: 'arm64-v8a'),
+      ),
+      NativeTargetRecipe(
+        pattern: NativeTargetPattern(
+          os: OS.android,
+          architecture: Architecture.x64,
+        ),
+        recipe: _androidRecipe(abi: 'x86_64'),
+      ),
+      NativeTargetRecipe(
+        pattern: NativeTargetPattern(
+          os: OS.android,
+          architecture: Architecture.ia32,
+        ),
+        recipe: _androidRecipe(abi: 'x86'),
+      ),
+      NativeTargetRecipe(
+        pattern: NativeTargetPattern(os: OS.iOS),
+        recipe: _iosRecipe,
+      ),
+    ],
   ),
 );
 
@@ -55,8 +95,12 @@ StepBuildRecipe _desktopRecipe = StepBuildRecipe(
     ),
     CmakeBuildStep(buildDirectory: 'build', targets: ['tdjson']),
     ExportArtifactStep(
-      artifactPath: 'build/td/libtdjson.so',
-      outputName: 'libtdjson.so',
+      id: 'export_tdjson',
+      declaration: NativeArtifactDeclaration(
+        id: 'tdjson',
+        kind: NativeArtifactKind.dynamicLibrary,
+        primaryPath: 'build/libtdjson.so',
+      ),
     ),
   ],
 );
@@ -76,45 +120,55 @@ StepBuildRecipe _windowsRecipe = StepBuildRecipe(
     ),
     CmakeBuildStep(buildDirectory: 'build', targets: ['tdjson']),
     ExportArtifactStep(
-      artifactPath: 'build/td/tdjson.dll',
-      outputName: 'tdjson.dll',
+      id: 'export_tdjson',
+      declaration: NativeArtifactDeclaration(
+        id: 'tdjson',
+        kind: NativeArtifactKind.dynamicLibrary,
+        primaryPath: 'build/td/tdjson.dll',
+      ),
     ),
   ],
 );
 
 /// Android recipe with OpenSSL and cross-compilation.
-StepBuildRecipe _androidRecipe = StepBuildRecipe(
-  steps: [
-    CmakeConfigureStep(
-      sourceDirectory: 'example/android',
-      buildDirectory: 'build-native',
-      defines: {'TD_GENERATE_SOURCE_FILES': 'ON', 'TD_ANDROID_JSON': 'ON'},
-    ),
-    CmakeBuildStep(buildDirectory: 'build-native'),
-    CmakeConfigureStep(
-      sourceDirectory: 'example/android',
-      buildDirectory: 'build',
-      defines: {
-        'CMAKE_BUILD_TYPE': 'RelWithDebInfo',
-        'ANDROID_ABI': 'arm64-v8a',
-        'ANDROID_STL': 'c++_static',
-        'ANDROID_PLATFORM': 'android-24',
-        'TD_ANDROID_JSON': 'ON',
-        'GNinja': '',
-      },
-    ),
-    CmakeBuildStep(buildDirectory: 'build', targets: ['tdjson']),
-    StripStep(
-      id: 'strip',
-      inputPath: 'build/td/libtdjson.so',
-      outputPath: 'libtdjson.so',
-    ),
-    ExportArtifactStep(
-      artifactPath: 'libtdjson.so',
-      outputName: 'libtdjson.so',
-    ),
-  ],
-);
+StepBuildRecipe _androidRecipe({required String abi}) {
+  return StepBuildRecipe(
+    steps: [
+      CmakeConfigureStep(
+        sourceDirectory: 'example/android',
+        buildDirectory: 'build-native',
+        defines: {'TD_GENERATE_SOURCE_FILES': 'ON', 'TD_ANDROID_JSON': 'ON'},
+      ),
+      CmakeBuildStep(buildDirectory: 'build-native'),
+      CmakeConfigureStep(
+        sourceDirectory: 'example/android',
+        buildDirectory: 'build',
+        defines: {
+          'CMAKE_BUILD_TYPE': 'RelWithDebInfo',
+          'ANDROID_ABI': abi,
+          'ANDROID_STL': 'c++_static',
+          'ANDROID_PLATFORM': 'android-24',
+          'TD_ANDROID_JSON': 'ON',
+          'GNinja': '',
+        },
+      ),
+      CmakeBuildStep(buildDirectory: 'build', targets: ['tdjson']),
+      StripStep(
+        id: 'strip',
+        inputPath: 'build/td/libtdjson.so',
+        outputPath: 'libtdjson.so',
+      ),
+      ExportArtifactStep(
+        id: 'export_tdjson',
+        declaration: NativeArtifactDeclaration(
+          id: 'tdjson',
+          kind: NativeArtifactKind.dynamicLibrary,
+          primaryPath: 'libtdjson.so',
+        ),
+      ),
+    ],
+  );
+}
 
 /// iOS recipe with OpenSSL and cross-compilation.
 StepBuildRecipe _iosRecipe = StepBuildRecipe(
@@ -164,19 +218,13 @@ StepBuildRecipe _iosRecipe = StepBuildRecipe(
       ],
     ),
     ExportArtifactStep(
-      artifactPath: 'install/lib/libtdjson.dylib',
-      outputName: 'libtdjson.dylib',
+      id: 'export_tdjson',
+      declaration: NativeArtifactDeclaration(
+        id: 'tdjson',
+        kind: NativeArtifactKind.dynamicLibrary,
+        primaryPath: 'install/lib/libtdjson.dylib',
+      ),
     ),
   ],
 );
 
-/// Prebuilt manifest for TDLib releases.
-final _prebuilts = PrebuiltManifest(
-  schemaVersion: 1,
-  release: const GitHubReleaseSource(
-    owner: 'kingwill101',
-    repository: 'tdlib',
-    tag: 'tdlib-v1.8.52',
-  ),
-  artifacts: {},
-);
