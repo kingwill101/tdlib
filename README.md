@@ -99,6 +99,14 @@ dart run native_prebuilt manifest update \
 
 The command auto-finds `native_prebuilt.yaml`, writes `lib/src/hook/tdlib_prebuilts.g.dart`, and uses the sibling `built-library/` directory when TDLib build recipes are present.
 
+The recipe file uses Liquid templates for paths and environment values, for example:
+
+```yaml
+source_directory: "{{ source.path }}/example/android"
+build_directory: "{{ work }}/build"
+CMAKE_TOOLCHAIN_FILE: "{{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake"
+```
+
 ## Development
 
 ```bash

@@ -1,7 +1,6 @@
 /// TDLib native build hook.
 ///
-/// Uses the declarative [NativeProject] definition to build
-/// TDLib for all supported platforms.
+/// Delegates to the manifest-driven native_prebuilt build pipeline.
 library;
 
 import 'package:native_prebuilt/hooks.dart';

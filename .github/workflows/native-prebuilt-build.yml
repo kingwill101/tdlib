@@ -18,12 +18,16 @@ jobs:
       PUB_CACHE: ${{ github.workspace }}/.pub-cache
       SCCACHE_GHA_ENABLED: 'true'
       SCCACHE_GHA_VERSION: tdlib-v1
+      CMAKE_C_COMPILER_LAUNCHER: sccache
+      CMAKE_CXX_COMPILER_LAUNCHER: sccache
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
       VCPKG_INSTALLED_DIR: ${{ github.workspace }}/.dart_tool/tdlib-cmake-cache/windows-x64/vcpkg_installed
       VCPKG_DEFAULT_TRIPLET: x64-windows
       VCPKG_DEFAULT_HOST_TRIPLET: x64-windows
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: dart-lang/setup-dart@v1
 
@@ -133,7 +137,9 @@ jobs:
         run: dart pub get
 
       - name: Build native artifacts
-        run: dart run native_prebuilt build --target ${{ inputs.target }} --output built-library --from-source
+        env:
+          TARGET: ${{ inputs.target }}
+        run: dart run native_prebuilt build --target "$TARGET" --output built-library --from-source
 
       - name: Show compiler cache statistics (Windows)
         if: always() && inputs.runner == 'windows-latest'
@@ -149,4 +155,4 @@ jobs:
         with:
           name: ${{ inputs.artifact-name }}
           path: built-library/${{ inputs.target }}/
-          if-no-files-found: ignore
+          if-no-files-found: error
