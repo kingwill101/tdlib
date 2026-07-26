@@ -109,6 +109,8 @@ dart run native_prebuilt workflow init --gitlab --platform linux,windows
 
 `workflow init` writes the GitHub workflow set by default, or the GitLab set when `--gitlab` is passed. GitLab outputs can be filtered with `--platform`.
 
+See the `native_prebuilt` README for the full YAML build-step reference. For editor validation, point YAML schemas at `../native_prebuilt/schema/native_prebuilt.schema.json`.
+
 To regenerate the manifest after a release:
 
 ```bash
