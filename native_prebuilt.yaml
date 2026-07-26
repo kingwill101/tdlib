@@ -95,7 +95,8 @@ build:
         os: android
         architecture: arm
       steps:
-        - id: configure_source
+        - &android_source_config_step
+          id: configure_source
           type: cmake_configure
           source_directory: "{{ source.path }}/example/android"
           build_directory: "{{ work }}/build-native"
@@ -103,7 +104,8 @@ build:
             TD_GENERATE_SOURCE_FILES: ON
             TD_ANDROID_JSON: ON
 
-        - id: build_source
+        - &android_source_build_step
+          id: build_source
           type: cmake_build
           build_directory: "{{ work }}/build-native"
 
@@ -119,18 +121,21 @@ build:
             ANDROID_PLATFORM: android-24
             TD_ANDROID_JSON: ON
 
-        - id: build_tdlib
+        - &android_tdlib_build_step
+          id: build_tdlib
           type: cmake_build
           build_directory: "{{ work }}/build"
           targets:
             - tdjson
 
-        - id: strip
+        - &android_strip_step
+          id: strip
           type: strip
           input_path: "{{ work }}/build/td/libtdjson.so"
           output_path: "{{ work }}/libtdjson.so"
 
-        - id: export_tdjson
+        - &android_export_step
+          id: export_tdjson
           type: export_artifact
           artifact: tdjson
           kind: dynamic_library
@@ -140,17 +145,8 @@ build:
         os: android
         architecture: arm64
       steps:
-        - id: configure_source
-          type: cmake_configure
-          source_directory: "{{ source.path }}/example/android"
-          build_directory: "{{ work }}/build-native"
-          definitions:
-            TD_GENERATE_SOURCE_FILES: ON
-            TD_ANDROID_JSON: ON
-
-        - id: build_source
-          type: cmake_build
-          build_directory: "{{ work }}/build-native"
+        - *android_source_config_step
+        - *android_source_build_step
 
         - id: configure_tdlib
           type: cmake_configure
@@ -164,38 +160,16 @@ build:
             ANDROID_PLATFORM: android-24
             TD_ANDROID_JSON: ON
 
-        - id: build_tdlib
-          type: cmake_build
-          build_directory: "{{ work }}/build"
-          targets:
-            - tdjson
-
-        - id: strip
-          type: strip
-          input_path: "{{ work }}/build/td/libtdjson.so"
-          output_path: "{{ work }}/libtdjson.so"
-
-        - id: export_tdjson
-          type: export_artifact
-          artifact: tdjson
-          kind: dynamic_library
-          primary: "{{ work }}/libtdjson.so"
+        - *android_tdlib_build_step
+        - *android_strip_step
+        - *android_export_step
 
     - target:
         os: android
         architecture: x64
       steps:
-        - id: configure_source
-          type: cmake_configure
-          source_directory: "{{ source.path }}/example/android"
-          build_directory: "{{ work }}/build-native"
-          definitions:
-            TD_GENERATE_SOURCE_FILES: ON
-            TD_ANDROID_JSON: ON
-
-        - id: build_source
-          type: cmake_build
-          build_directory: "{{ work }}/build-native"
+        - *android_source_config_step
+        - *android_source_build_step
 
         - id: configure_tdlib
           type: cmake_configure
@@ -209,38 +183,16 @@ build:
             ANDROID_PLATFORM: android-24
             TD_ANDROID_JSON: ON
 
-        - id: build_tdlib
-          type: cmake_build
-          build_directory: "{{ work }}/build"
-          targets:
-            - tdjson
-
-        - id: strip
-          type: strip
-          input_path: "{{ work }}/build/td/libtdjson.so"
-          output_path: "{{ work }}/libtdjson.so"
-
-        - id: export_tdjson
-          type: export_artifact
-          artifact: tdjson
-          kind: dynamic_library
-          primary: "{{ work }}/libtdjson.so"
+        - *android_tdlib_build_step
+        - *android_strip_step
+        - *android_export_step
 
     - target:
         os: android
         architecture: ia32
       steps:
-        - id: configure_source
-          type: cmake_configure
-          source_directory: "{{ source.path }}/example/android"
-          build_directory: "{{ work }}/build-native"
-          definitions:
-            TD_GENERATE_SOURCE_FILES: ON
-            TD_ANDROID_JSON: ON
-
-        - id: build_source
-          type: cmake_build
-          build_directory: "{{ work }}/build-native"
+        - *android_source_config_step
+        - *android_source_build_step
 
         - id: configure_tdlib
           type: cmake_configure
@@ -254,22 +206,9 @@ build:
             ANDROID_PLATFORM: android-24
             TD_ANDROID_JSON: ON
 
-        - id: build_tdlib
-          type: cmake_build
-          build_directory: "{{ work }}/build"
-          targets:
-            - tdjson
-
-        - id: strip
-          type: strip
-          input_path: "{{ work }}/build/td/libtdjson.so"
-          output_path: "{{ work }}/libtdjson.so"
-
-        - id: export_tdjson
-          type: export_artifact
-          artifact: tdjson
-          kind: dynamic_library
-          primary: "{{ work }}/libtdjson.so"
+        - *android_tdlib_build_step
+        - *android_strip_step
+        - *android_export_step
 
     - target:
         os: ios
