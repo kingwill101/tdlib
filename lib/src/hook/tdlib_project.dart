@@ -187,11 +187,12 @@ StepBuildRecipe _iosRecipe = StepBuildRecipe(
       id: 'checkout-python-apple-support',
       repository: 'https://github.com/beeware/Python-Apple-support',
       revision: '6f43aba0ddd5a9f52f39775d0141bd4363614020',
+      targetDirectory: 'python-apple-support',
     ),
     CommandStep(
       id: 'build-openssl',
       commands: [
-        ['make', 'OpenSSL-iOS'],
+        ['/usr/bin/make', 'OpenSSL-iOS'],
       ],
       workingDirectory: 'python-apple-support',
     ),

@@ -298,7 +298,7 @@ build:
         - id: build_openssl
           type: command
           commands:
-            - - make
+            - - /usr/bin/make
               - OpenSSL-iOS
           working_directory: python-apple-support
 
