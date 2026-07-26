@@ -13,7 +13,7 @@ dependencies:
   native_prebuilt:
     git:
       url: https://github.com/kingwill101/native_prebuilt.git
-      ref: 95acf912bde5a7574385ef20875a82fe63a00fa1
+      ref: 6de4310643b8e254fa53fd5693002453b4fbffb9
   rxdart: ^0.28.0
   code_assets: ^1.2.0
   hooks: ^2.0.0
