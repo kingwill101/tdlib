@@ -137,6 +137,7 @@ jobs:
         run: dart pub get
 
       - name: Build native artifacts
+        shell: bash
         env:
           TARGET: ${{ inputs.target }}
         run: dart run native_prebuilt build --target "$TARGET" --output built-library --from-source
