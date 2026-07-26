@@ -90,6 +90,14 @@ This package uses `native_prebuilt` to generate release metadata and GitHub Acti
 dart run native_prebuilt workflow init
 ```
 
+To generate GitLab templates for selected platforms:
+
+```bash
+dart run native_prebuilt workflow init --gitlab --platform linux,windows
+```
+
+`workflow init` writes the GitHub workflow set by default, or the GitLab set when `--gitlab` is passed. GitLab outputs can be filtered with `--platform`.
+
 To regenerate the manifest after a release:
 
 ```bash
