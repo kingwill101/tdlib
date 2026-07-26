@@ -9,6 +9,17 @@ This repository is a continuation of:
 
 The packages were combined here and rewritten in some areas.
 
+## Contents
+
+- [Features](#features)
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Prebuilt binaries](#prebuilt-binaries)
+- [Build from source](#build-from-source)
+- [Workflow and manifest generation](#workflow-and-manifest-generation)
+- [Development](#development)
+- [Notes](#notes)
+
 ## Features
 
 - generated TDLib schema bindings
