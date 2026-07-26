@@ -94,3 +94,4 @@ example/README.md
 *.lib
 *.exe
 *.pdb
+built-library/*/native_prebuilt.json

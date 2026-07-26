@@ -1,27 +1,330 @@
+# TDLib native_prebuilt configuration.
+# This file is the source of truth for TDLib build recipes.
+
 schema: 1
 package: tdlib
 asset_name: src/tdlib.g.dart
 library_stem: tdjson
+link_mode: dynamic_library
+
+source:
+  type: git
+  repository: https://github.com/tdlib/td.git
+  revision: e0943d068ce90b5010f1aea946e6901e25b43bf6
+
 release:
+  provider: github
   repository: kingwill101/tdlib
   tag: tdlib-v1.8.64
+
+build:
+  recipes:
+    - target:
+        os: linux
+      steps:
+        - id: configure
+          type: cmake_configure
+          source_directory: "{{ source.path }}"
+          build_directory: "{{ work }}/build"
+          definitions:
+            CMAKE_BUILD_TYPE: Release
+
+        - id: build
+          type: cmake_build
+          build_directory: "{{ work }}/build"
+          targets:
+            - tdjson
+
+        - id: export_tdjson
+          type: export_artifact
+          artifact: tdjson
+          kind: dynamic_library
+          primary: "{{ work }}/build/libtdjson.so"
+
+    - target:
+        os: macos
+      steps:
+        - id: configure
+          type: cmake_configure
+          source_directory: "{{ source.path }}"
+          build_directory: "{{ work }}/build"
+          definitions:
+            CMAKE_BUILD_TYPE: Release
+
+        - id: build
+          type: cmake_build
+          build_directory: "{{ work }}/build"
+          targets:
+            - tdjson
+
+        - id: export_tdjson
+          type: export_artifact
+          artifact: tdjson
+          kind: dynamic_library
+          primary: "{{ work }}/build/libtdjson.dylib"
+
+    - target:
+        os: windows
+      steps:
+        - id: configure
+          type: cmake_configure
+          source_directory: "{{ source.path }}"
+          build_directory: "{{ work }}/build"
+          generator: Ninja
+          definitions:
+            CMAKE_BUILD_TYPE: Release
+            CMAKE_TOOLCHAIN_FILE: "{{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake"
+            VCPKG_TARGET_TRIPLET: x64-windows
+            VCPKG_HOST_TRIPLET: x64-windows
+            VCPKG_INSTALLED_DIR: "{{ env.VCPKG_INSTALLED_DIR }}"
+            CMAKE_INSTALL_PREFIX: "{{ work }}/install"
+
+        - id: build
+          type: cmake_build
+          build_directory: "{{ work }}/build"
+          targets:
+            - install
+
+        - id: export_tdjson
+          type: export_artifact
+          artifact: tdjson
+          kind: dynamic_library
+          primary: "{{ work }}/install/bin/tdjson.dll"
+
+    - target:
+        os: android
+        architecture: arm
+      steps:
+        - &android_source_config_step
+          id: configure_source
+          type: cmake_configure
+          source_directory: "{{ source.path }}/example/android"
+          build_directory: "{{ work }}/build-native"
+          definitions:
+            TD_GENERATE_SOURCE_FILES: ON
+            TD_ANDROID_JSON: ON
+
+        - &android_source_build_step
+          id: build_source
+          type: cmake_build
+          build_directory: "{{ work }}/build-native"
+
+        - id: configure_tdlib
+          type: cmake_configure
+          source_directory: "{{ source.path }}/example/android"
+          build_directory: "{{ work }}/build"
+          generator: Ninja
+          definitions:
+            CMAKE_BUILD_TYPE: RelWithDebInfo
+            ANDROID_ABI: armeabi-v7a
+            ANDROID_STL: c++_static
+            ANDROID_PLATFORM: android-24
+            TD_ANDROID_JSON: ON
+
+        - &android_tdlib_build_step
+          id: build_tdlib
+          type: cmake_build
+          build_directory: "{{ work }}/build"
+          targets:
+            - tdjson
+
+        - &android_strip_step
+          id: strip
+          type: strip
+          input_path: "{{ work }}/build/td/libtdjson.so"
+          output_path: "{{ work }}/libtdjson.so"
+
+        - &android_export_step
+          id: export_tdjson
+          type: export_artifact
+          artifact: tdjson
+          kind: dynamic_library
+          primary: "{{ work }}/libtdjson.so"
+
+    - target:
+        os: android
+        architecture: arm64
+      steps:
+        - *android_source_config_step
+        - *android_source_build_step
+
+        - id: configure_tdlib
+          type: cmake_configure
+          source_directory: "{{ source.path }}/example/android"
+          build_directory: "{{ work }}/build"
+          generator: Ninja
+          definitions:
+            CMAKE_BUILD_TYPE: RelWithDebInfo
+            ANDROID_ABI: arm64-v8a
+            ANDROID_STL: c++_static
+            ANDROID_PLATFORM: android-24
+            TD_ANDROID_JSON: ON
+
+        - *android_tdlib_build_step
+        - *android_strip_step
+        - *android_export_step
+
+    - target:
+        os: android
+        architecture: x64
+      steps:
+        - *android_source_config_step
+        - *android_source_build_step
+
+        - id: configure_tdlib
+          type: cmake_configure
+          source_directory: "{{ source.path }}/example/android"
+          build_directory: "{{ work }}/build"
+          generator: Ninja
+          definitions:
+            CMAKE_BUILD_TYPE: RelWithDebInfo
+            ANDROID_ABI: x86_64
+            ANDROID_STL: c++_static
+            ANDROID_PLATFORM: android-24
+            TD_ANDROID_JSON: ON
+
+        - *android_tdlib_build_step
+        - *android_strip_step
+        - *android_export_step
+
+    - target:
+        os: android
+        architecture: ia32
+      steps:
+        - *android_source_config_step
+        - *android_source_build_step
+
+        - id: configure_tdlib
+          type: cmake_configure
+          source_directory: "{{ source.path }}/example/android"
+          build_directory: "{{ work }}/build"
+          generator: Ninja
+          definitions:
+            CMAKE_BUILD_TYPE: RelWithDebInfo
+            ANDROID_ABI: x86
+            ANDROID_STL: c++_static
+            ANDROID_PLATFORM: android-24
+            TD_ANDROID_JSON: ON
+
+        - *android_tdlib_build_step
+        - *android_strip_step
+        - *android_export_step
+
+    - target:
+        os: ios
+        architecture: arm64
+      steps:
+        - id: configure_prepare
+          type: cmake_configure
+          source_directory: "{{ source.path }}"
+          build_directory: "{{ work }}/native-build"
+          generator: Ninja
+          definitions:
+            CMAKE_MAKE_PROGRAM: "{{ env.NINJA_PATH | default: 'ninja' }}"
+            TD_GENERATE_SOURCE_FILES: ON
+
+        - id: build_prepare
+          type: cmake_build
+          build_directory: "{{ work }}/native-build"
+          targets:
+            - prepare_cross_compiling
+
+        - id: checkout-python-apple-support
+          type: git_checkout
+          repository: https://github.com/beeware/Python-Apple-support
+          revision: 6f43aba0ddd5a9f52f39775d0141bd4363614020
+          target_directory: "{{ work }}/python-apple-support"
+
+        - id: patch-python-apple-support
+          type: git_apply_patch
+          patch_path: "{{ source.path }}/example/ios/Python-Apple-support.patch"
+          target_directory: "{{ work }}/python-apple-support"
+          needs:
+            - checkout-python-apple-support
+
+        - id: build_openssl
+          type: command
+          commands:
+            - - /usr/bin/make
+              - OpenSSL-iOS
+          working_directory: "{{ work }}/python-apple-support"
+          needs:
+            - patch-python-apple-support
+
+        - id: configure_tdlib
+          type: cmake_configure
+          source_directory: "{{ source.path }}"
+          build_directory: "{{ work }}/build"
+          generator: Ninja
+          toolchain_file: CMake/iOS.cmake
+          definitions:
+            CMAKE_MAKE_PROGRAM: "{{ env.NINJA_PATH | default: 'ninja' }}"
+            CMAKE_BUILD_TYPE: Release
+            CMAKE_INSTALL_PREFIX: "{{ work }}/install"
+            IOS_PLATFORM: OS
+            IOS_DEPLOYMENT_TARGET: '17'
+            OPENSSL_FOUND: '1'
+            OPENSSL_CRYPTO_LIBRARY: "{{ work }}/python-apple-support/merge/iOS/openssl/lib/libcrypto.a"
+            OPENSSL_SSL_LIBRARY: "{{ work }}/python-apple-support/merge/iOS/openssl/lib/libssl.a"
+            OPENSSL_INCLUDE_DIR: "{{ work }}/python-apple-support/merge/iOS/openssl/include"
+            OPENSSL_LIBRARIES: "{{ work }}/python-apple-support/merge/iOS/openssl/lib/libcrypto.a;{{ work }}/python-apple-support/merge/iOS/openssl/lib/libssl.a"
+
+        - id: build_tdlib
+          type: cmake_build
+          build_directory: "{{ work }}/build"
+          targets:
+            - install
+
+        - id: fix_install_name
+          type: command
+          commands:
+            - - install_name_tool
+              - -id
+              - '@rpath/libtdjson.dylib'
+              - "{{ work }}/install/lib/libtdjson.dylib"
+
+        - id: export_tdjson
+          type: export_artifact
+          artifact: tdjson
+          kind: dynamic_library
+          primary: "{{ work }}/install/lib/libtdjson.dylib"
+
 artifacts:
+  android-arm:
+    archive: tdlib-android-arm.tar.gz
+    payload:
+      type: dynamic_library
+
   android-arm64:
     archive: tdlib-android-arm64.tar.gz
     payload:
       type: dynamic_library
+
+  android-x64:
+    archive: tdlib-android-x64.tar.gz
+    payload:
+      type: dynamic_library
+
+  android-ia32:
+    archive: tdlib-android-ia32.tar.gz
+    payload:
+      type: dynamic_library
+
   linux-x64:
     archive: tdlib-linux-x64.tar.gz
     payload:
       type: dynamic_library
+
   windows-x64:
     archive: tdlib-windows-x64.tar.gz
     payload:
       type: dynamic_library
+
   macos-arm64:
     archive: tdlib-macos-arm64.tar.gz
     payload:
       type: dynamic_library
+
   ios-arm64:
     archive: tdlib-ios-arm64.tar.gz
     payload:

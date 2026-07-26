@@ -9,6 +9,17 @@ This repository is a continuation of:
 
 The packages were combined here and rewritten in some areas.
 
+## Contents
+
+- [Features](#features)
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Prebuilt binaries](#prebuilt-binaries)
+- [Build from source](#build-from-source)
+- [Workflow and manifest generation](#workflow-and-manifest-generation)
+- [Development](#development)
+- [Notes](#notes)
+
 ## Features
 
 - generated TDLib schema bindings
@@ -87,18 +98,34 @@ That is useful when developing TDLib itself or when you need a local rebuild for
 This package uses `native_prebuilt` to generate release metadata and GitHub Actions scaffolding.
 
 ```bash
-dart run native_prebuilt workflow init --config native_prebuilt.yaml
+dart run native_prebuilt workflow init
 ```
+
+To generate GitLab templates for selected platforms:
+
+```bash
+dart run native_prebuilt workflow init --gitlab --platform linux,windows
+```
+
+`workflow init` writes the GitHub workflow set by default, or the GitLab set when `--gitlab` is passed. GitLab outputs can be filtered with `--platform`.
+
+See the `native_prebuilt` README for the full YAML build-step reference. For editor validation, point YAML schemas at `../native_prebuilt/schema/native_prebuilt.schema.json`.
 
 To regenerate the manifest after a release:
 
 ```bash
 dart run native_prebuilt manifest update \
-  --config native_prebuilt.yaml \
-  --output lib/src/hook/tdlib_prebuilts.g.dart \
-  --built-library-dir built-library \
-  --release-assets-dir release-assets \
   --tag tdlib-vX.Y.Z
+```
+
+The command auto-finds `native_prebuilt.yaml`, writes `lib/src/hook/tdlib_prebuilts.g.dart`, and uses the sibling `built-library/` directory when TDLib build recipes are present.
+
+The recipe file uses Liquid templates for paths and environment values, for example:
+
+```yaml
+source_directory: "{{ source.path }}/example/android"
+build_directory: "{{ work }}/build"
+CMAKE_TOOLCHAIN_FILE: "{{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake"
 ```
 
 ## Development
