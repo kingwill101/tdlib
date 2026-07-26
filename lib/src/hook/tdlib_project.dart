@@ -176,6 +176,7 @@ StepBuildRecipe _iosRecipe = StepBuildRecipe(
     CmakeConfigureStep(
       sourceDirectory: '.',
       buildDirectory: 'native-build',
+      generator: 'Ninja',
       defines: {'TD_GENERATE_SOURCE_FILES': 'ON'},
     ),
     CmakeBuildStep(
@@ -197,6 +198,7 @@ StepBuildRecipe _iosRecipe = StepBuildRecipe(
     CmakeConfigureStep(
       sourceDirectory: '.',
       buildDirectory: 'build',
+      generator: 'Ninja',
       toolchainFile: 'CMake/iOS.cmake',
       defines: {
         'CMAKE_BUILD_TYPE': 'Release',

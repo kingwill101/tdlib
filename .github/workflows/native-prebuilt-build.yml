@@ -14,11 +14,136 @@ on:
 jobs:
   build:
     runs-on: ${{ inputs.runner }}
+    env:
+      PUB_CACHE: ${{ github.workspace }}/.pub-cache
+      SCCACHE_GHA_ENABLED: 'true'
+      SCCACHE_GHA_VERSION: tdlib-v1
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_INSTALLED_DIR: ${{ github.workspace }}/.dart_tool/tdlib-cmake-cache/windows-x64/vcpkg_installed
+      VCPKG_DEFAULT_TRIPLET: x64-windows
+      VCPKG_DEFAULT_HOST_TRIPLET: x64-windows
     steps:
       - uses: actions/checkout@v4
+
       - uses: dart-lang/setup-dart@v1
-      - run: dart pub get --no-example
-      - run: dart run native_prebuilt build --target ${{ inputs.target }} --output built-library --from-source
+
+      - name: Restore Dart package cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PUB_CACHE }}
+          key: >-
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+            ${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            dart-pub-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Install native toolchain (Linux)
+        if: inputs.runner == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            clang \
+            cmake \
+            gperf \
+            libclang-dev \
+            ninja-build \
+            pkg-config
+
+      - name: Install native tools (macOS)
+        if: inputs.runner == 'macos-15'
+        run: brew install gperf ninja
+
+      - name: Configure MSVC command-line environment
+        if: inputs.runner == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install native tools (Windows)
+        if: inputs.runner == 'windows-latest'
+        shell: pwsh
+        run: choco install gperf -y
+
+      - name: Set up vcpkg and install dependencies
+        if: inputs.runner == 'windows-latest'
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: ${{ env.VCPKG_ROOT }}
+          vcpkgGitCommitId: b2cb0da531c2f1f740045bfe7c4dac59f0b2b69c
+          vcpkgJsonGlob: 'vcpkg.json'
+          runVcpkgInstall: true
+
+      - name: Configure C/C++ compiler cache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
+      - name: Verify native build tools (Linux/macOS)
+        if: inputs.runner != 'windows-latest'
+        run: |
+          cmake --version
+          ninja --version
+          gperf --version
+          "${SCCACHE_PATH}" --version
+
+      - name: Verify native build tools and dependencies (Windows)
+        if: inputs.runner == 'windows-latest'
+        shell: pwsh
+        run: |
+          cmake --version
+          ninja --version
+          gperf --version
+          cl
+          sccache --version
+
+          $vcpkgExe = Join-Path $env:VCPKG_ROOT "vcpkg.exe"
+          $toolchainFile = Join-Path `
+            $env:VCPKG_ROOT `
+            "scripts/buildsystems/vcpkg.cmake"
+
+          $zlibHeader = Join-Path `
+            $env:VCPKG_INSTALLED_DIR `
+            "x64-windows/include/zlib.h"
+
+          $opensslHeader = Join-Path `
+            $env:VCPKG_INSTALLED_DIR `
+            "x64-windows/include/openssl/ssl.h"
+
+          if (-not (Test-Path $vcpkgExe)) {
+            throw "vcpkg.exe was not found: $vcpkgExe"
+          }
+
+          if (-not (Test-Path $toolchainFile)) {
+            throw "vcpkg toolchain was not found: $toolchainFile"
+          }
+
+          if (-not (Test-Path $zlibHeader)) {
+            throw "zlib was not installed: $zlibHeader"
+          }
+
+          if (-not (Test-Path $opensslHeader)) {
+            throw "OpenSSL was not installed: $opensslHeader"
+          }
+
+          & $vcpkgExe version
+
+          Write-Host "VCPKG_ROOT = $env:VCPKG_ROOT"
+          Write-Host "VCPKG_INSTALLED_DIR = $env:VCPKG_INSTALLED_DIR"
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Build native artifacts
+        run: dart run native_prebuilt build --target ${{ inputs.target }} --output built-library --from-source
+
+      - name: Show compiler cache statistics (Windows)
+        if: always() && inputs.runner == 'windows-latest'
+        shell: pwsh
+        run: sccache --show-stats
+
+      - name: Show compiler cache statistics (Linux/macOS)
+        if: always() && inputs.runner != 'windows-latest'
+        run: "${SCCACHE_PATH} --show-stats"
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

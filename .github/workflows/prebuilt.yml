@@ -16,352 +16,51 @@ permissions:
   contents: read
 
 env:
-  PUB_CACHE: ${{ github.workspace }}/.pub-cache
   CONFIG: native_prebuilt.yaml
   MANIFEST_OUTPUT: lib/src/hook/tdlib_prebuilts.g.dart
 
-  # Enable sccache's GitHub Actions storage backend.
-  SCCACHE_GHA_ENABLED: "true"
-
-  # Change this value whenever you intentionally want to clear all
-  # previously cached C/C++ compilation results.
-  SCCACHE_GHA_VERSION: "tdlib-v1"
-
-  # CMake reads these when configuring a new build directory.
-  CMAKE_C_COMPILER_LAUNCHER: sccache
-  CMAKE_CXX_COMPILER_LAUNCHER: sccache
-
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dart-lang/setup-dart@v1
-
-      - name: Restore Dart package cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PUB_CACHE }}
-          key: >-
-            dart-pub-${{ runner.os }}-${{ runner.arch }}-
-            ${{ hashFiles('pubspec.lock') }}
-          restore-keys: |
-            dart-pub-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Install native toolchain
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            build-essential \
-            clang \
-            cmake \
-            gperf \
-            libclang-dev \
-            ninja-build \
-            pkg-config
-
-      - name: Configure C/C++ compiler cache
-        uses: mozilla-actions/sccache-action@v0.0.10
-
-      - name: Verify native build tools
-        run: |
-          cmake --version
-          ninja --version
-          gperf --version
-          "${SCCACHE_PATH}" --version
-
-      - name: Resolve Dart dependencies
-        run: dart pub get
-
-      - name: Build native artifacts
-        run: dart run native_prebuilt build --target linux-x64 --output built-library --from-source
-
-      - name: Show compiler cache statistics
-        if: always()
-        run: "${SCCACHE_PATH} --show-stats"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-built-library
-          path: built-library/linux-x64/
-          if-no-files-found: error
-
-  build-macos:
-    runs-on: macos-15
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dart-lang/setup-dart@v1
-
-      - name: Restore Dart package cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PUB_CACHE }}
-          key: >-
-            dart-pub-${{ runner.os }}-${{ runner.arch }}-
-            ${{ hashFiles('pubspec.lock') }}
-          restore-keys: |
-            dart-pub-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Install native tools
-        run: brew install gperf
-
-      - name: Configure C/C++ compiler cache
-        uses: mozilla-actions/sccache-action@v0.0.10
-
-      - name: Verify native build tools
-        run: |
-          cmake --version
-          ninja --version
-          gperf --version
-          "${SCCACHE_PATH}" --version
-
-      - name: Resolve Dart dependencies
-        run: dart pub get
-
-      - name: Build native artifacts
-        run: dart run native_prebuilt build --target macos-arm64 --output built-library --from-source
-
-      - name: Show compiler cache statistics
-        if: always()
-        run: "${SCCACHE_PATH} --show-stats"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-built-library
-          path: built-library/macos-arm64/
-          if-no-files-found: error
-
-  build-windows:
-    runs-on: windows-latest
-
-    env:
-      CMAKE_GENERATOR: Ninja
-      CMAKE_C_COMPILER_LAUNCHER: sccache
-      CMAKE_CXX_COMPILER_LAUNCHER: sccache
-
-      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
-      VCPKG_INSTALLED_DIR: ${{ github.workspace }}/.dart_tool/tdlib-cmake-cache/windows-x64/vcpkg_installed
-      VCPKG_DEFAULT_TRIPLET: x64-windows
-      VCPKG_DEFAULT_HOST_TRIPLET: x64-windows
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dart-lang/setup-dart@v1
-
-      - name: Configure MSVC command-line environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
-      - name: Install native tools
-        shell: pwsh
-        run: choco install gperf -y
-
-      - name: Restore Dart package cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PUB_CACHE }}
-          key: >-
-            dart-pub-${{ runner.os }}-${{ runner.arch }}-
-            ${{ hashFiles('pubspec.yaml', 'pubspec.lock') }}
-          restore-keys: |
-            dart-pub-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Set up vcpkg and install dependencies
-        uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgDirectory: ${{ env.VCPKG_ROOT }}
-          vcpkgGitCommitId: b2cb0da531c2f1f740045bfe7c4dac59f0b2b69c
-          vcpkgJsonGlob: 'vcpkg.json'
-          runVcpkgInstall: true
-
-      - name: Configure C/C++ compiler cache
-        id: sccache
-        uses: mozilla-actions/sccache-action@v0.0.10
-
-      - name: Verify native build tools and dependencies
-        shell: pwsh
-        run: |
-          cmake --version
-          ninja --version
-          gperf --version
-          cl
-          sccache --version
-
-          $vcpkgExe = Join-Path $env:VCPKG_ROOT "vcpkg.exe"
-          $toolchainFile = Join-Path `
-            $env:VCPKG_ROOT `
-            "scripts/buildsystems/vcpkg.cmake"
-
-          $zlibHeader = Join-Path `
-            $env:VCPKG_INSTALLED_DIR `
-            "x64-windows/include/zlib.h"
-
-          $opensslHeader = Join-Path `
-            $env:VCPKG_INSTALLED_DIR `
-            "x64-windows/include/openssl/ssl.h"
-
-          if (-not (Test-Path $vcpkgExe)) {
-            throw "vcpkg.exe was not found: $vcpkgExe"
-          }
-
-          if (-not (Test-Path $toolchainFile)) {
-            throw "vcpkg toolchain was not found: $toolchainFile"
-          }
-
-          if (-not (Test-Path $zlibHeader)) {
-            throw "zlib was not installed: $zlibHeader"
-          }
-
-          if (-not (Test-Path $opensslHeader)) {
-            throw "OpenSSL was not installed: $opensslHeader"
-          }
-
-          & $vcpkgExe version
-
-          Write-Host "VCPKG_ROOT = $env:VCPKG_ROOT"
-          Write-Host "VCPKG_INSTALLED_DIR = $env:VCPKG_INSTALLED_DIR"
-
-      - name: Resolve Dart dependencies
-        run: dart pub get
-
-      - name: Build native artifacts
-        run: dart run native_prebuilt build --target windows-x64 --output built-library --from-source
-
-      - name: Show compiler cache statistics
-        if: ${{ always() && steps.sccache.outcome == 'success' }}
-        shell: pwsh
-        run: sccache --show-stats
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-built-library
-          path: built-library/windows-x64/
-          if-no-files-found: error
-
-  build-android:
-    runs-on: ubuntu-latest
+  build:
     strategy:
       fail-fast: false
       matrix:
         include:
-          - target: android-arm64
-            artifact: android-built-library-arm64
-          - target: android-arm
-            artifact: android-built-library-arm
-          - target: android-x64
-            artifact: android-built-library-x64
-          - target: android-ia32
-            artifact: android-built-library-ia32
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dart-lang/setup-dart@v1
-
-      - name: Restore Dart package cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PUB_CACHE }}
-          key: >-
-            dart-pub-${{ runner.os }}-${{ runner.arch }}-
-            ${{ hashFiles('pubspec.lock') }}
-          restore-keys: |
-            dart-pub-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Install native toolchain
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends             build-essential             clang             cmake             gperf             libclang-dev             ninja-build             pkg-config
-
-      - name: Configure C/C++ compiler cache
-        uses: mozilla-actions/sccache-action@v0.0.10
-
-      - name: Verify native build tools
-        run: |
-          cmake --version
-          ninja --version
-          gperf --version
-          "${SCCACHE_PATH}" --version
-
-      - name: Resolve Dart dependencies
-        run: dart pub get
-
-      - name: Build native artifacts
-        run: dart run native_prebuilt build --target ${{ matrix.target }} --output built-library --from-source
-
-      - name: Show compiler cache statistics
-        if: always()
-        run: "${SCCACHE_PATH} --show-stats"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact }}
-          path: built-library/${{ matrix.target }}/
-          if-no-files-found: error
-
-  build-ios:
-    runs-on: macos-15
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dart-lang/setup-dart@v1
-
-      - name: Restore Dart package cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PUB_CACHE }}
-          key: >-
-            dart-pub-${{ runner.os }}-${{ runner.arch }}-
-            ${{ hashFiles('pubspec.lock') }}
-          restore-keys: |
-            dart-pub-${{ runner.os }}-${{ runner.arch }}-
-
-      - name: Install native tools
-        run: brew install gperf ninja
-
-      - name: Configure C/C++ compiler cache
-        uses: mozilla-actions/sccache-action@v0.0.10
-
-      - name: Verify native build tools
-        run: |
-          cmake --version
-          ninja --version
-          gperf --version
-          "${SCCACHE_PATH}" --version
-
-      - name: Resolve Dart dependencies
-        run: dart pub get
-
-      - name: Build native artifacts
-        run: dart run native_prebuilt build --target ios-arm64 --output built-library --from-source
-
-      - name: Show compiler cache statistics
-        if: always()
-        run: "${SCCACHE_PATH} --show-stats"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ios-built-library
-          path: built-library/ios-arm64/
-          if-no-files-found: error
+          - runner: ubuntu-latest
+            target: linux-x64
+            artifact_name: linux-built-library
+          - runner: macos-15
+            target: macos-arm64
+            artifact_name: macos-built-library
+          - runner: windows-latest
+            target: windows-x64
+            artifact_name: windows-built-library
+          - runner: ubuntu-latest
+            target: android-arm64
+            artifact_name: android-built-library-arm64
+          - runner: ubuntu-latest
+            target: android-arm
+            artifact_name: android-built-library-arm
+          - runner: ubuntu-latest
+            target: android-x64
+            artifact_name: android-built-library-x64
+          - runner: ubuntu-latest
+            target: android-ia32
+            artifact_name: android-built-library-ia32
+          - runner: macos-15
+            target: ios-arm64
+            artifact_name: ios-built-library
+    uses: ./.github/workflows/native-prebuilt-build.yml
+    with:
+      runner: ${{ matrix.runner }}
+      target: ${{ matrix.target }}
+      artifact-name: ${{ matrix.artifact_name }}
 
   update-manifest:
     if: >
       github.event_name == 'workflow_dispatch' ||
       startsWith(github.ref, 'refs/tags/')
     needs:
-      - build-linux
-      - build-macos
-      - build-windows
-      - build-android
-      - build-ios
+      - build
     runs-on: ubuntu-latest
 
     steps:
@@ -372,7 +71,7 @@ jobs:
       - name: Restore Dart package cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.PUB_CACHE }}
+          path: ${{ github.workspace }}/.pub-cache
           key: >-
             dart-pub-${{ runner.os }}-${{ runner.arch }}-
             ${{ hashFiles('pubspec.lock') }}
