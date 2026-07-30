@@ -4,8 +4,12 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'tdlib-v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish (e.g. tdlib-v1.8.64)
+        required: true
+        type: string
   pull_request:
 
 permissions:
@@ -53,8 +57,8 @@ jobs:
 
   update-manifest:
     if: >
-      github.ref == 'refs/heads/main' ||
-      startsWith(github.ref, 'refs/tags/')
+      github.event_name == 'workflow_dispatch' ||
+      github.ref == 'refs/heads/main'
     needs:
       - build
     runs-on: ubuntu-latest
@@ -124,12 +128,21 @@ jobs:
 
       - name: Generate manifest and release assets
         run: |
-          dart run native_prebuilt manifest update \
-            --config "$CONFIG" \
-            --output "$MANIFEST_OUTPUT" \
-            --built-library-dir built-library \
-            --release-assets-dir release-assets \
-            --tag "${{ github.ref_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+            dart run native_prebuilt manifest update \
+              --config "$CONFIG" \
+              --output "$MANIFEST_OUTPUT" \
+              --built-library-dir built-library \
+              --release-assets-dir release-assets \
+              --tag "$TAG"
+          else
+            dart run native_prebuilt manifest update \
+              --config "$CONFIG" \
+              --output "$MANIFEST_OUTPUT" \
+              --built-library-dir built-library \
+              --release-assets-dir release-assets
+          fi
 
       - name: Commit generated manifest
         if: github.ref == 'refs/heads/main'
@@ -152,7 +165,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.event_name == 'workflow_dispatch'
     needs:
       - update-manifest
     runs-on: ubuntu-latest
@@ -171,6 +184,6 @@ jobs:
       - name: Publish GitHub release assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ github.event.inputs.tag }}
           fail_on_unmatched_files: true
           files: release-assets/*
