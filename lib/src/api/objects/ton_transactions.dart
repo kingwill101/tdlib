@@ -1,20 +1,22 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// Represents a list of Toncoin transactions
+/// Represents a list of TON Gram transactions
 @immutable
 final class TonTransactions extends TdObject {
   TonTransactions({
-    required this.tonAmount,
+    required this.gramAmount,
     required this.transactions,
     required this.nextOffset,
   });
 
-  /// [tonAmount] The total amount of owned Toncoins
-  final int tonAmount;
+  /// [gramAmount] The total amount of owned Grams, in the smallest units of the
+  /// cryptocurrency
+  final int gramAmount;
 
-  /// [transactions] List of Toncoin transactions
+  /// [transactions] List of Gram transactions
   final List<TonTransaction> transactions;
 
   /// [nextOffset] The offset for the next request. If empty, then there are no
@@ -28,7 +30,7 @@ final class TonTransactions extends TdObject {
 
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
-    'ton_amount': tonAmount,
+    'gram_amount': gramAmount,
     'transactions': transactions.map((item) => item.toJson()).toList(),
     'next_offset': nextOffset,
     '@type': constructor,
@@ -40,7 +42,7 @@ final class TonTransactions extends TdObject {
     }
 
     return TonTransactions(
-      tonAmount: (json['ton_amount'] as int?) ?? 0,
+      gramAmount: (json['gram_amount'] as int?) ?? 0,
       transactions: List<TonTransaction>.from(
         tdListFromJson(json['transactions'])
             .map((item) => TonTransaction.fromJson(tdMapFromJson(item)))

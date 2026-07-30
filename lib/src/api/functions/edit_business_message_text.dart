@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -29,7 +30,7 @@ final class EditBusinessMessageText extends TdFunction {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] New text content of the message. Must be of type
-  /// inputMessageText
+  /// inputMessageText or inputMessageRichMessage
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'editBusinessMessageText';

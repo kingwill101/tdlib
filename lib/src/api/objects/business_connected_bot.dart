@@ -1,8 +1,9 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// Describes a bot connected to a business account
+/// Describes a business bot connected to an account
 @immutable
 final class BusinessConnectedBot extends TdObject {
   BusinessConnectedBot({required this.botUserId, this.recipients, this.rights});

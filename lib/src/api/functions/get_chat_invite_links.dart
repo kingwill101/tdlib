@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -24,7 +25,7 @@ final class GetChatInviteLinks extends TdFunction {
   /// identifier of the current user for non-owner
   final int creatorUserId;
 
-  /// [isRevoked] Pass true if revoked links needs to be returned instead of
+  /// [isRevoked] Pass true if revoked links need to be returned instead of
   /// active or expired
   final bool isRevoked;
 

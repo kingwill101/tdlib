@@ -1,24 +1,26 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// Returns detailed Toncoin revenue statistics of the current user
-/// Returns [TonRevenueStatistics]
+/// Confirms an unconfirmed business connection of the current user from
+/// another device
+/// Returns [Ok]
 @immutable
-final class GetTonRevenueStatistics extends TdFunction {
-  GetTonRevenueStatistics({required this.isDark});
+final class ConfirmBusinessConnectedBot extends TdFunction {
+  ConfirmBusinessConnectedBot({required this.botUserId});
 
-  /// [isDark] Pass true if a dark theme is used by the application
-  final bool isDark;
+  /// [botUserId] User identifier of the bot
+  final int botUserId;
 
-  static const String constructor = 'getTonRevenueStatistics';
+  static const String constructor = 'confirmBusinessConnectedBot';
 
   @override
   String getConstructor() => constructor;
 
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
-    'is_dark': isDark,
+    'bot_user_id': botUserId,
     '@type': constructor,
   };
 

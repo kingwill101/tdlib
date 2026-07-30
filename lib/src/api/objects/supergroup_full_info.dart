@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -7,6 +8,7 @@ import '../tdapi.dart';
 final class SupergroupFullInfo extends TdObject {
   SupergroupFullInfo({
     this.photo,
+    required this.communityId,
     required this.description,
     required this.memberCount,
     required this.administratorCount,
@@ -41,6 +43,7 @@ final class SupergroupFullInfo extends TdObject {
     required this.customEmojiStickerSetId,
     this.location,
     this.inviteLink,
+    required this.guardBotUserId,
     required this.botCommands,
     this.botVerification,
     this.mainProfileTab,
@@ -51,6 +54,10 @@ final class SupergroupFullInfo extends TdObject {
   /// [photo] Chat photo; may be null if empty or unknown. If non-null, then it
   /// is the same photo as in chat.photo
   final ChatPhoto? photo;
+
+  /// [communityId] Identifier of the community to which the corresponding chat
+  /// was added
+  final int communityId;
 
   /// param_[description] Supergroup or channel description
   final String description;
@@ -194,6 +201,10 @@ final class SupergroupFullInfo extends TdObject {
   /// administrators with can_invite_users right only
   final ChatInviteLink? inviteLink;
 
+  /// [guardBotUserId] User identifier of the guard bot in the group; for chat
+  /// administrators only
+  final int guardBotUserId;
+
   /// [botCommands] List of commands of bots in the group
   final List<BotCommands> botCommands;
 
@@ -221,6 +232,7 @@ final class SupergroupFullInfo extends TdObject {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'photo': photo?.toJson(),
+    'community_id': communityId,
     'description': description,
     'member_count': memberCount,
     'administrator_count': administratorCount,
@@ -255,6 +267,7 @@ final class SupergroupFullInfo extends TdObject {
     'custom_emoji_sticker_set_id': customEmojiStickerSetId.toString(),
     'location': location?.toJson(),
     'invite_link': inviteLink?.toJson(),
+    'guard_bot_user_id': guardBotUserId,
     'bot_commands': botCommands.map((item) => item.toJson()).toList(),
     'bot_verification': botVerification?.toJson(),
     'main_profile_tab': mainProfileTab?.toJson(),
@@ -270,6 +283,7 @@ final class SupergroupFullInfo extends TdObject {
 
     return SupergroupFullInfo(
       photo: ChatPhoto.fromJson(tdMapFromJson(json['photo'])),
+      communityId: (json['community_id'] as int?) ?? 0,
       description: (json['description'] as String?) ?? '',
       memberCount: (json['member_count'] as int?) ?? 0,
       administratorCount: (json['administrator_count'] as int?) ?? 0,
@@ -320,6 +334,7 @@ final class SupergroupFullInfo extends TdObject {
           0,
       location: ChatLocation.fromJson(tdMapFromJson(json['location'])),
       inviteLink: ChatInviteLink.fromJson(tdMapFromJson(json['invite_link'])),
+      guardBotUserId: (json['guard_bot_user_id'] as int?) ?? 0,
       botCommands: List<BotCommands>.from(
         tdListFromJson(json['bot_commands'])
             .map((item) => BotCommands.fromJson(tdMapFromJson(item)))

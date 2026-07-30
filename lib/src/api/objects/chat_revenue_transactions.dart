@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -6,14 +7,14 @@ import '../tdapi.dart';
 @immutable
 final class ChatRevenueTransactions extends TdObject {
   ChatRevenueTransactions({
-    required this.tonAmount,
+    required this.gramAmount,
     required this.transactions,
     required this.nextOffset,
   });
 
-  /// [tonAmount] The amount of owned Toncoins; in the smallest units of the
+  /// [gramAmount] The amount of owned TON Grams; in the smallest units of the
   /// cryptocurrency
-  final int tonAmount;
+  final int gramAmount;
 
   /// [transactions] List of transactions
   final List<ChatRevenueTransaction> transactions;
@@ -29,7 +30,7 @@ final class ChatRevenueTransactions extends TdObject {
 
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
-    'ton_amount': tonAmount,
+    'gram_amount': gramAmount,
     'transactions': transactions.map((item) => item.toJson()).toList(),
     'next_offset': nextOffset,
     '@type': constructor,
@@ -41,7 +42,7 @@ final class ChatRevenueTransactions extends TdObject {
     }
 
     return ChatRevenueTransactions(
-      tonAmount: (json['ton_amount'] as int?) ?? 0,
+      gramAmount: (json['gram_amount'] as int?) ?? 0,
       transactions: List<ChatRevenueTransaction>.from(
         tdListFromJson(json['transactions'])
             .map((item) => ChatRevenueTransaction.fromJson(tdMapFromJson(item)))

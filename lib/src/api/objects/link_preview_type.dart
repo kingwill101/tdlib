@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -308,7 +309,7 @@ final class LinkPreviewTypeApp extends LinkPreviewType {
   int get hashCode => overriddenHashCode;
 }
 
-/// The link is a link to a web site
+/// The link is a link to a website
 @immutable
 final class LinkPreviewTypeArticle extends LinkPreviewType {
   LinkPreviewTypeArticle({this.photo});

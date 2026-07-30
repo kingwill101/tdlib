@@ -1,10 +1,12 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
 /// Adds a custom text composition style to the list of used by the user
 /// styles. May return an error with a message "TONES_SAVED_TOO_MANY" if the
-/// maximum number of added custom styles has been reached
+/// maximum number of added custom styles
+/// getOption("added_text_composition_style_count_max") has been reached
 /// Returns [Ok]
 @immutable
 final class AddTextCompositionStyle extends TdFunction {

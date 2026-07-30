@@ -1,9 +1,10 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// Returns an emoji for the given country. Returns an empty string on
-/// failure. Can be called synchronously
+/// Returns an emoji for the flag of the given country. Returns an empty
+/// string on failure. Can be called synchronously
 /// Returns [Text]
 @immutable
 final class GetCountryFlagEmoji extends TdFunction {

@@ -1,8 +1,9 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// Returns the list of Toncoin transactions of the current user
+/// Returns the list of TON blockchain transactions of the current user
 /// Returns [TonTransactions]
 @immutable
 final class GetTonTransactions extends TdFunction {

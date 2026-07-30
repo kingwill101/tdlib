@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -27,9 +28,9 @@ final class PollOption extends TdObject {
   final FormattedText? text;
 
   /// [media] Option media; may be null if none. If present, currently, can be
-  /// only of the types messageAnimation, messageLocation, messagePhoto,
-  /// messageSticker, messageVenue, or messageVideo without caption
-  final MessageContent? media;
+  /// only of the types pollMediaAnimation, pollMediaLink, pollMediaLocation,
+  /// pollMediaPhoto, pollMediaSticker, pollMediaVenue, or pollMediaVideo
+  final PollMedia? media;
 
   /// [voterCount] Number of voters for this option, available only for closed
   /// or voted polls, or if the current user is the creator of the poll
@@ -85,7 +86,7 @@ final class PollOption extends TdObject {
     return PollOption(
       id: (json['id'] as String?) ?? '',
       text: FormattedText.fromJson(tdMapFromJson(json['text'])),
-      media: MessageContent.fromJson(tdMapFromJson(json['media'])),
+      media: PollMedia.fromJson(tdMapFromJson(json['media'])),
       voterCount: (json['voter_count'] as int?) ?? 0,
       votePercentage: (json['vote_percentage'] as int?) ?? 0,
       recentVoterIds: List<MessageSender>.from(

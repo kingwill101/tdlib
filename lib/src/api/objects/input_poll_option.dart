@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -12,10 +13,10 @@ final class InputPollOption extends TdObject {
   final FormattedText? text;
 
   /// [media] Option media; pass null if none; ignored in addPollOption. Must be
-  /// one of the following types: inputMessageAnimation, non-live
-  /// inputMessageLocation, inputMessagePhoto, inputMessageSticker,
-  /// inputMessageVenue, or inputMessageVideo without caption
-  final InputMessageContent? media;
+  /// one of the following types: inputPollMediaAnimation, inputPollMediaLink,
+  /// inputPollMediaLocation, inputPollMediaPhoto, inputPollMediaSticker,
+  /// inputPollMediaVenue, or inputPollMediaVideo without caption
+  final InputPollMedia? media;
 
   static const String constructor = 'inputPollOption';
 
@@ -36,7 +37,7 @@ final class InputPollOption extends TdObject {
 
     return InputPollOption(
       text: FormattedText.fromJson(tdMapFromJson(json['text'])),
-      media: InputMessageContent.fromJson(tdMapFromJson(json['media'])),
+      media: InputPollMedia.fromJson(tdMapFromJson(json['media'])),
     );
   }
 

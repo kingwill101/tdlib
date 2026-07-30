@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -132,7 +133,7 @@ final class GiveawayParticipantStatusAlreadyWasMember
   int get hashCode => overriddenHashCode;
 }
 
-/// The user can't participate in the giveaway, because they phone number is
+/// The user can't participate in the giveaway, because their phone number is
 /// from a disallowed country
 @immutable
 final class GiveawayParticipantStatusDisallowedCountry

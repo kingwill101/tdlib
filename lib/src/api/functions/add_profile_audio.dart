@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -7,27 +8,10 @@ import '../tdapi.dart';
 /// Returns [Ok]
 @immutable
 final class AddProfileAudio extends TdFunction {
-  AddProfileAudio({
-    this.audio,
-    required this.duration,
-    required this.title,
-    required this.performer,
-  });
+  AddProfileAudio({this.audio});
 
-  /// [audio] The audio file to be added
-  final InputFile? audio;
-
-  /// [duration] Duration of the audio, in seconds; may be replaced by the
-  /// server; ignored for already uploaded files
-  final int duration;
-
-  /// [title] Title of the audio; 0-64 characters; may be replaced by the
-  /// server; ignored for already uploaded files
-  final String title;
-
-  /// [performer] Performer of the audio; 0-64 characters, may be replaced by
-  /// the server; ignored for already uploaded files
-  final String performer;
+  /// [audio] The audio to add
+  final InputAudio? audio;
 
   static const String constructor = 'addProfileAudio';
 
@@ -37,9 +21,6 @@ final class AddProfileAudio extends TdFunction {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'audio': audio?.toJson(),
-    'duration': duration,
-    'title': title,
-    'performer': performer,
     '@type': constructor,
   };
 

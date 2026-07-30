@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -109,7 +110,7 @@ final class StarSubscriptionTypeChannel extends StarSubscriptionType {
   final bool canReuse;
 
   /// [inviteLink] The invite link that can be used to renew the subscription if
-  /// it has been expired; may be empty, if the link isn't available anymore
+  /// it has expired; may be empty if the link isn't available anymore
   final String inviteLink;
 
   static const String constructor = 'starSubscriptionTypeChannel';

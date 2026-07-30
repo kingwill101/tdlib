@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -24,8 +25,8 @@ sealed class SettingsSection extends TdObject {
   /// [SettingsSectionFeatures]
   /// [SettingsSectionInAppBrowser]
   /// [SettingsSectionLanguage]
+  /// [SettingsSectionMyGrams]
   /// [SettingsSectionMyStars]
-  /// [SettingsSectionMyToncoins]
   /// [SettingsSectionNotifications]
   /// [SettingsSectionPowerSaving]
   /// [SettingsSectionPremium]
@@ -73,11 +74,11 @@ sealed class SettingsSection extends TdObject {
       case SettingsSectionLanguage.constructor:
         return SettingsSectionLanguage.fromJson(json);
 
+      case SettingsSectionMyGrams.constructor:
+        return SettingsSectionMyGrams.fromJson(json);
+
       case SettingsSectionMyStars.constructor:
         return SettingsSectionMyStars.fromJson(json);
-
-      case SettingsSectionMyToncoins.constructor:
-        return SettingsSectionMyToncoins.fromJson(json);
 
       case SettingsSectionNotifications.constructor:
         return SettingsSectionNotifications.fromJson(json);
@@ -542,6 +543,34 @@ final class SettingsSectionLanguage extends SettingsSection {
   int get hashCode => overriddenHashCode;
 }
 
+/// The TON Gram balance and transaction section
+@immutable
+final class SettingsSectionMyGrams extends SettingsSection {
+  const SettingsSectionMyGrams();
+
+  static const String constructor = 'settingsSectionMyGrams';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{'@type': constructor};
+
+  static SettingsSectionMyGrams? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return const SettingsSectionMyGrams();
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// The Telegram Star balance and transaction section
 @immutable
 final class SettingsSectionMyStars extends SettingsSection {
@@ -570,34 +599,6 @@ final class SettingsSectionMyStars extends SettingsSection {
     return SettingsSectionMyStars(
       subsection: (json['subsection'] as String?) ?? '',
     );
-  }
-
-  @override
-  bool operator ==(Object other) => overriddenEquality(other);
-
-  @override
-  int get hashCode => overriddenHashCode;
-}
-
-/// The Toncoin balance and transaction section
-@immutable
-final class SettingsSectionMyToncoins extends SettingsSection {
-  const SettingsSectionMyToncoins();
-
-  static const String constructor = 'settingsSectionMyToncoins';
-
-  @override
-  String getConstructor() => constructor;
-
-  @override
-  Map<String, dynamic> toJson() => <String, dynamic>{'@type': constructor};
-
-  static SettingsSectionMyToncoins? fromJson(Map<String, dynamic>? json) {
-    if (json == null) {
-      return null;
-    }
-
-    return const SettingsSectionMyToncoins();
   }
 
   @override

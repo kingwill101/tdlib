@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -29,7 +30,7 @@ final class StarSubscription extends TdObject {
   /// [isCanceled] True, if the subscription was canceled
   final bool isCanceled;
 
-  /// [isExpiring] True, if the subscription expires soon and there are no
+  /// [isExpiring] True, if the subscription expires soon and there aren't
   /// enough Telegram Stars on the user's balance to extend it
   final bool isExpiring;
 

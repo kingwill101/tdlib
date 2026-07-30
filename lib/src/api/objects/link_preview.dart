@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -27,7 +28,7 @@ final class LinkPreview extends TdObject {
   /// [displayUrl] URL to display
   final String displayUrl;
 
-  /// [siteName] Short name of the site (e.g., Google Docs, App Store)
+  /// [siteName] Short name of the website (e.g., Google Docs, App Store)
   final String siteName;
 
   /// [title] Title of the content

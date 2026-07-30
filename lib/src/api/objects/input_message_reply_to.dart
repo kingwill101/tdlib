@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -13,6 +14,7 @@ sealed class InputMessageReplyTo extends TdObject {
   String getConstructor() => constructor;
 
   /// Inherited by:
+  /// [InputMessageReplyToEphemeralMessage]
   /// [InputMessageReplyToExternalMessage]
   /// [InputMessageReplyToMessage]
   /// [InputMessageReplyToStory]
@@ -22,6 +24,9 @@ sealed class InputMessageReplyTo extends TdObject {
     }
 
     switch (json['@type']) {
+      case InputMessageReplyToEphemeralMessage.constructor:
+        return InputMessageReplyToEphemeralMessage.fromJson(json);
+
       case InputMessageReplyToExternalMessage.constructor:
         return InputMessageReplyToExternalMessage.fromJson(json);
 
@@ -34,6 +39,44 @@ sealed class InputMessageReplyTo extends TdObject {
       default:
         return null;
     }
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// Describes an ephemeral message to be replied; for bots only
+@immutable
+final class InputMessageReplyToEphemeralMessage extends InputMessageReplyTo {
+  InputMessageReplyToEphemeralMessage({required this.ephemeralMessageId});
+
+  /// [ephemeralMessageId] The identifier of the ephemeral message to be replied
+  final int ephemeralMessageId;
+
+  static const String constructor = 'inputMessageReplyToEphemeralMessage';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'ephemeral_message_id': ephemeralMessageId,
+    '@type': constructor,
+  };
+
+  static InputMessageReplyToEphemeralMessage? fromJson(
+    Map<String, dynamic>? json,
+  ) {
+    if (json == null) {
+      return null;
+    }
+
+    return InputMessageReplyToEphemeralMessage(
+      ephemeralMessageId: (json['ephemeral_message_id'] as int?) ?? 0,
+    );
   }
 
   @override

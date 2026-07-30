@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -22,6 +23,7 @@ sealed class PremiumLimitType extends TdObject {
   /// [PremiumLimitTypeCreatedPublicChatCount]
   /// [PremiumLimitTypeCustomTextCompositionStyleCount]
   /// [PremiumLimitTypeFavoriteStickerCount]
+  /// [PremiumLimitTypeMessageTextLength]
   /// [PremiumLimitTypeMonthlyPostedStoryCount]
   /// [PremiumLimitTypeOwnedBotCount]
   /// [PremiumLimitTypePinnedArchivedChatCount]
@@ -66,6 +68,9 @@ sealed class PremiumLimitType extends TdObject {
 
       case PremiumLimitTypeFavoriteStickerCount.constructor:
         return PremiumLimitTypeFavoriteStickerCount.fromJson(json);
+
+      case PremiumLimitTypeMessageTextLength.constructor:
+        return PremiumLimitTypeMessageTextLength.fromJson(json);
 
       case PremiumLimitTypeMonthlyPostedStoryCount.constructor:
         return PremiumLimitTypeMonthlyPostedStoryCount.fromJson(json);
@@ -373,6 +378,36 @@ final class PremiumLimitTypeFavoriteStickerCount extends PremiumLimitType {
     }
 
     return const PremiumLimitTypeFavoriteStickerCount();
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// The maximum length of text of sent messages
+@immutable
+final class PremiumLimitTypeMessageTextLength extends PremiumLimitType {
+  const PremiumLimitTypeMessageTextLength();
+
+  static const String constructor = 'premiumLimitTypeMessageTextLength';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{'@type': constructor};
+
+  static PremiumLimitTypeMessageTextLength? fromJson(
+    Map<String, dynamic>? json,
+  ) {
+    if (json == null) {
+      return null;
+    }
+
+    return const PremiumLimitTypeMessageTextLength();
   }
 
   @override

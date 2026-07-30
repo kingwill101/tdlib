@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -152,7 +153,7 @@ final class UpgradedGiftOriginOffer extends UpgradedGiftOrigin {
   int get hashCode => overriddenHashCode;
 }
 
-/// The sender or receiver of the message has paid for upgraid of the gift,
+/// The sender or receiver of the message has paid for upgrade of the gift,
 /// which has been completed
 @immutable
 final class UpgradedGiftOriginPrepaidUpgrade extends UpgradedGiftOrigin {

@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -40,7 +41,7 @@ final class TextCompositionStyle extends TdObject {
   /// [prompt] Prompt of the style; for created custom styles only
   final String prompt;
 
-  /// [creatorUserId] User identifier of the creator of the style; 0 if none of
+  /// [creatorUserId] User identifier of the creator of the style; 0 if none or
   /// unknown
   final int creatorUserId;
 

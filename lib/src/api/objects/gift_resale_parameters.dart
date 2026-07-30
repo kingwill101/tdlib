@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -7,18 +8,18 @@ import '../tdapi.dart';
 final class GiftResaleParameters extends TdObject {
   GiftResaleParameters({
     required this.starCount,
-    required this.toncoinCentCount,
-    required this.toncoinOnly,
+    required this.gramCentCount,
+    required this.gramOnly,
   });
 
   /// [starCount] Resale price of the gift in Telegram Stars
   final int starCount;
 
-  /// [toncoinCentCount] Resale price of the gift in 1/100 of Toncoin
-  final int toncoinCentCount;
+  /// [gramCentCount] Resale price of the gift in 1/100 of TON Gram
+  final int gramCentCount;
 
-  /// [toncoinOnly] True, if the gift can be bought only using Toncoins
-  final bool toncoinOnly;
+  /// [gramOnly] True, if the gift can be bought only using Grams
+  final bool gramOnly;
 
   static const String constructor = 'giftResaleParameters';
 
@@ -28,8 +29,8 @@ final class GiftResaleParameters extends TdObject {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'star_count': starCount,
-    'toncoin_cent_count': toncoinCentCount,
-    'toncoin_only': toncoinOnly,
+    'gram_cent_count': gramCentCount,
+    'gram_only': gramOnly,
     '@type': constructor,
   };
 
@@ -40,8 +41,8 @@ final class GiftResaleParameters extends TdObject {
 
     return GiftResaleParameters(
       starCount: (json['star_count'] as int?) ?? 0,
-      toncoinCentCount: (json['toncoin_cent_count'] as int?) ?? 0,
-      toncoinOnly: (json['toncoin_only'] as bool?) ?? false,
+      gramCentCount: (json['gram_cent_count'] as int?) ?? 0,
+      gramOnly: (json['gram_only'] as bool?) ?? false,
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -24,8 +25,7 @@ final class AddQuickReplyShortcutMessage extends TdFunction {
   final int replyToMessageId;
 
   /// [inputMessageContent] The content of the message to be added;
-  /// inputMessagePaidMedia, inputMessageForwarded and inputMessageLocation with
-  /// live_period aren't supported
+  /// inputMessagePaidMedia, inputMessageForwarded and inputMessageLiveLocation
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'addQuickReplyShortcutMessage';

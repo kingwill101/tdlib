@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -12,6 +13,7 @@ final class Poll extends TdObject {
     required this.totalVoterCount,
     required this.recentVoterIds,
     required this.canGetVoters,
+    required this.canSeeResults,
     required this.isAnonymous,
     required this.allowsMultipleAnswers,
     required this.allowsRevoting,
@@ -45,6 +47,9 @@ final class Poll extends TdObject {
   /// [canGetVoters] True, if the current user can get voters in the poll using
   /// getPollVoters
   final bool canGetVoters;
+
+  /// [canSeeResults] True, if the current user can see results of the poll
+  final bool canSeeResults;
 
   /// [isAnonymous] True, if the poll is anonymous
   final bool isAnonymous;
@@ -100,6 +105,7 @@ final class Poll extends TdObject {
     'total_voter_count': totalVoterCount,
     'recent_voter_ids': recentVoterIds.map((item) => item.toJson()).toList(),
     'can_get_voters': canGetVoters,
+    'can_see_results': canSeeResults,
     'is_anonymous': isAnonymous,
     'allows_multiple_answers': allowsMultipleAnswers,
     'allows_revoting': allowsRevoting,
@@ -134,6 +140,7 @@ final class Poll extends TdObject {
             .whereType<MessageSender>(),
       ),
       canGetVoters: (json['can_get_voters'] as bool?) ?? false,
+      canSeeResults: (json['can_see_results'] as bool?) ?? false,
       isAnonymous: (json['is_anonymous'] as bool?) ?? false,
       allowsMultipleAnswers:
           (json['allows_multiple_answers'] as bool?) ?? false,

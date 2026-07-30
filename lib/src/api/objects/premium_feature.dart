@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -35,6 +36,7 @@ sealed class PremiumFeature extends TdObject {
   /// [PremiumFeatureProfileBadge]
   /// [PremiumFeatureProtectPrivateChatContent]
   /// [PremiumFeatureRealTimeChatTranslation]
+  /// [PremiumFeatureRichMessages]
   /// [PremiumFeatureSavedMessagesTags]
   /// [PremiumFeatureTextComposition]
   /// [PremiumFeatureUniqueReactions]
@@ -112,6 +114,9 @@ sealed class PremiumFeature extends TdObject {
 
       case PremiumFeatureRealTimeChatTranslation.constructor:
         return PremiumFeatureRealTimeChatTranslation.fromJson(json);
+
+      case PremiumFeatureRichMessages.constructor:
+        return PremiumFeatureRichMessages.fromJson(json);
 
       case PremiumFeatureSavedMessagesTags.constructor:
         return PremiumFeatureSavedMessagesTags.fromJson(json);
@@ -768,6 +773,34 @@ final class PremiumFeatureRealTimeChatTranslation extends PremiumFeature {
     }
 
     return const PremiumFeatureRealTimeChatTranslation();
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// The ability to send rich messages
+@immutable
+final class PremiumFeatureRichMessages extends PremiumFeature {
+  const PremiumFeatureRichMessages();
+
+  static const String constructor = 'premiumFeatureRichMessages';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{'@type': constructor};
+
+  static PremiumFeatureRichMessages? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return const PremiumFeatureRichMessages();
   }
 
   @override

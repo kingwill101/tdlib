@@ -1,17 +1,40 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
 /// Describes an item of a list page block
 @immutable
 final class PageBlockListItem extends TdObject {
-  PageBlockListItem({required this.label, required this.pageBlocks});
+  PageBlockListItem({
+    required this.label,
+    required this.blocks,
+    required this.hasCheckbox,
+    required this.isChecked,
+    required this.value,
+    required this.type,
+  });
 
   /// [label] Item label
   final String label;
 
-  /// [pageBlocks] Item blocks
-  final List<PageBlock> pageBlocks;
+  /// [blocks] Item blocks
+  final List<PageBlock> blocks;
+
+  /// [hasCheckbox] True, if the item has a checkbox
+  final bool hasCheckbox;
+
+  /// [isChecked] True, if the item is checked
+  final bool isChecked;
+
+  /// [value] Value of the item; 0 for unordered lists
+  final int value;
+
+  /// [type] Type of the item numbering type; must be one of "a" for lowercase
+  /// letters, "A" for uppercase letters, "i" for lowercase Roman numerals, "I"
+  /// for uppercase Roman numerals, "1" for decimal numbers, or empty for
+  /// unordered lists
+  final String type;
 
   static const String constructor = 'pageBlockListItem';
 
@@ -21,7 +44,11 @@ final class PageBlockListItem extends TdObject {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'label': label,
-    'page_blocks': pageBlocks.map((item) => item.toJson()).toList(),
+    'blocks': blocks.map((item) => item.toJson()).toList(),
+    'has_checkbox': hasCheckbox,
+    'is_checked': isChecked,
+    'value': value,
+    'type': type,
     '@type': constructor,
   };
 
@@ -32,11 +59,15 @@ final class PageBlockListItem extends TdObject {
 
     return PageBlockListItem(
       label: (json['label'] as String?) ?? '',
-      pageBlocks: List<PageBlock>.from(
-        tdListFromJson(json['page_blocks'])
+      blocks: List<PageBlock>.from(
+        tdListFromJson(json['blocks'])
             .map((item) => PageBlock.fromJson(tdMapFromJson(item)))
             .whereType<PageBlock>(),
       ),
+      hasCheckbox: (json['has_checkbox'] as bool?) ?? false,
+      isChecked: (json['is_checked'] as bool?) ?? false,
+      value: (json['value'] as int?) ?? 0,
+      type: (json['type'] as String?) ?? '',
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -62,6 +63,7 @@ final class UserTypeBot extends UserType {
     required this.isInline,
     required this.inlineQueryPlaceholder,
     required this.supportsGuestQueries,
+    required this.isGuard,
     required this.needLocation,
     required this.canConnectToBusiness,
     required this.canBeAddedToAttachmentMenu,
@@ -107,6 +109,9 @@ final class UserTypeBot extends UserType {
   /// any non-secret chat
   final bool supportsGuestQueries;
 
+  /// [isGuard] True, if the bot can be set as a guard bot in supergroup chats
+  final bool isGuard;
+
   /// [needLocation] True, if the location of the user is expected to be sent
   /// with every inline query to this bot
   final bool needLocation;
@@ -139,6 +144,7 @@ final class UserTypeBot extends UserType {
     'is_inline': isInline,
     'inline_query_placeholder': inlineQueryPlaceholder,
     'supports_guest_queries': supportsGuestQueries,
+    'is_guard': isGuard,
     'need_location': needLocation,
     'can_connect_to_business': canConnectToBusiness,
     'can_be_added_to_attachment_menu': canBeAddedToAttachmentMenu,
@@ -165,6 +171,7 @@ final class UserTypeBot extends UserType {
       inlineQueryPlaceholder:
           (json['inline_query_placeholder'] as String?) ?? '',
       supportsGuestQueries: (json['supports_guest_queries'] as bool?) ?? false,
+      isGuard: (json['is_guard'] as bool?) ?? false,
       needLocation: (json['need_location'] as bool?) ?? false,
       canConnectToBusiness: (json['can_connect_to_business'] as bool?) ?? false,
       canBeAddedToAttachmentMenu:

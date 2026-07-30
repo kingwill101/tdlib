@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -39,7 +40,7 @@ sealed class StoryList extends TdObject {
   int get hashCode => overriddenHashCode;
 }
 
-/// The list of stories, shown in the Arvhive chat list
+/// The list of stories, shown in the Archive chat list
 @immutable
 final class StoryListArchive extends StoryList {
   const StoryListArchive();

@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -8,7 +9,7 @@ final class DraftMessage extends TdObject {
   DraftMessage({
     this.replyTo,
     required this.date,
-    this.inputMessageText,
+    this.content,
     required this.effectId,
     this.suggestedPostInfo,
   });
@@ -20,9 +21,8 @@ final class DraftMessage extends TdObject {
   /// [date] Point in time (Unix timestamp) when the draft was created
   final int date;
 
-  /// [inputMessageText] Content of the message draft; must be of the type
-  /// inputMessageText, inputMessageVideoNote, or inputMessageVoiceNote
-  final InputMessageContent? inputMessageText;
+  /// [content] Content of the message draft
+  final DraftMessageContent? content;
 
   /// [effectId] Identifier of the effect to apply to the message when it is
   /// sent; 0 if none
@@ -41,7 +41,7 @@ final class DraftMessage extends TdObject {
   Map<String, dynamic> toJson() => <String, dynamic>{
     'reply_to': replyTo?.toJson(),
     'date': date,
-    'input_message_text': inputMessageText?.toJson(),
+    'content': content?.toJson(),
     'effect_id': effectId.toString(),
     'suggested_post_info': suggestedPostInfo?.toJson(),
     '@type': constructor,
@@ -55,9 +55,7 @@ final class DraftMessage extends TdObject {
     return DraftMessage(
       replyTo: InputMessageReplyTo.fromJson(tdMapFromJson(json['reply_to'])),
       date: (json['date'] as int?) ?? 0,
-      inputMessageText: InputMessageContent.fromJson(
-        tdMapFromJson(json['input_message_text']),
-      ),
+      content: DraftMessageContent.fromJson(tdMapFromJson(json['content'])),
       effectId:
           int.tryParse((json['effect_id'] as dynamic)?.toString() ?? '') ?? 0,
       suggestedPostInfo: InputSuggestedPostInfo.fromJson(

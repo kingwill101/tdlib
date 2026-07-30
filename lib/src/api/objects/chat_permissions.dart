@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -24,8 +25,9 @@ final class ChatPermissions extends TdObject {
     required this.canCreateTopics,
   });
 
-  /// [canSendBasicMessages] True, if the user can send text messages, contacts,
-  /// giveaways, giveaway winners, invoices, locations, and venues
+  /// [canSendBasicMessages] True, if the user can send text messages, rich
+  /// messages, contacts, giveaways, giveaway winners, invoices, locations, and
+  /// venues
   final bool canSendBasicMessages;
 
   /// [canSendAudios] True, if the user can send music files

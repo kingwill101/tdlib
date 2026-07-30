@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -9,6 +10,7 @@ final class UserFullInfo extends TdObject {
     this.personalPhoto,
     this.photo,
     this.publicPhoto,
+    this.communityId,
     this.blockList,
     required this.canBeCalled,
     required this.supportsVideoCalls,
@@ -59,6 +61,10 @@ final class UserFullInfo extends TdObject {
   /// user.profile_photo and chat.photo. This photo isn't returned in the list
   /// of user photos
   final ChatPhoto? publicPhoto;
+
+  /// [communityId] Identifier of the community to which chat with the bot was
+  /// added; for bots only
+  final int? communityId;
 
   /// [blockList] Block list to which the user is added; may be null if none
   final BlockList? blockList;
@@ -175,6 +181,7 @@ final class UserFullInfo extends TdObject {
     'personal_photo': personalPhoto?.toJson(),
     'photo': photo?.toJson(),
     'public_photo': publicPhoto?.toJson(),
+    'community_id': communityId,
     'block_list': blockList?.toJson(),
     'can_be_called': canBeCalled,
     'supports_video_calls': supportsVideoCalls,
@@ -216,6 +223,7 @@ final class UserFullInfo extends TdObject {
       personalPhoto: ChatPhoto.fromJson(tdMapFromJson(json['personal_photo'])),
       photo: ChatPhoto.fromJson(tdMapFromJson(json['photo'])),
       publicPhoto: ChatPhoto.fromJson(tdMapFromJson(json['public_photo'])),
+      communityId: (json['community_id'] as int?),
       blockList: BlockList.fromJson(tdMapFromJson(json['block_list'])),
       canBeCalled: (json['can_be_called'] as bool?) ?? false,
       supportsVideoCalls: (json['supports_video_calls'] as bool?) ?? false,

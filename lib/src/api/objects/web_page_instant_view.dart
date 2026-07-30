@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -6,7 +7,7 @@ import '../tdapi.dart';
 @immutable
 final class WebPageInstantView extends TdObject {
   WebPageInstantView({
-    required this.pageBlocks,
+    required this.blocks,
     required this.viewCount,
     required this.version,
     required this.isRtl,
@@ -14,8 +15,8 @@ final class WebPageInstantView extends TdObject {
     this.feedbackLink,
   });
 
-  /// [pageBlocks] Content of the instant view page
-  final List<PageBlock> pageBlocks;
+  /// [blocks] Content of the instant view page
+  final List<PageBlock> blocks;
 
   /// [viewCount] Number of the instant view views; 0 if unknown
   final int viewCount;
@@ -41,7 +42,7 @@ final class WebPageInstantView extends TdObject {
 
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
-    'page_blocks': pageBlocks.map((item) => item.toJson()).toList(),
+    'blocks': blocks.map((item) => item.toJson()).toList(),
     'view_count': viewCount,
     'version': version,
     'is_rtl': isRtl,
@@ -56,8 +57,8 @@ final class WebPageInstantView extends TdObject {
     }
 
     return WebPageInstantView(
-      pageBlocks: List<PageBlock>.from(
-        tdListFromJson(json['page_blocks'])
+      blocks: List<PageBlock>.from(
+        tdListFromJson(json['blocks'])
             .map((item) => PageBlock.fromJson(tdMapFromJson(item)))
             .whereType<PageBlock>(),
       ),

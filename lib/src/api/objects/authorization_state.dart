@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -456,8 +457,9 @@ final class AuthorizationStateWaitPassword extends AuthorizationState {
 
 /// TDLib needs the user's phone number to authorize. Call
 /// setAuthenticationPhoneNumber to provide the phone number, or use
-/// requestQrCodeAuthentication, getAuthenticationPasskeyParameters, or
-/// checkAuthenticationBotToken for other authentication options
+/// requestQrCodeAuthentication, getAuthenticationPasskeyParameters,
+/// checkAuthenticationWebToken, or checkAuthenticationBotToken for other
+/// authentication options
 @immutable
 final class AuthorizationStateWaitPhoneNumber extends AuthorizationState {
   const AuthorizationStateWaitPhoneNumber();

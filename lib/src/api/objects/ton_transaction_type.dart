@@ -1,8 +1,9 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// Describes type of transaction with Toncoins
+/// Describes type of transaction with TON Grams
 @immutable
 sealed class TonTransactionType extends TdObject {
   const TonTransactionType();
@@ -67,7 +68,7 @@ sealed class TonTransactionType extends TdObject {
   int get hashCode => overriddenHashCode;
 }
 
-/// The transaction is a deposit of Toncoins from Fragment
+/// The transaction is a deposit of Grams from Fragment
 @immutable
 final class TonTransactionTypeFragmentDeposit extends TonTransactionType {
   TonTransactionTypeFragmentDeposit({required this.isGift, this.sticker});
@@ -111,7 +112,7 @@ final class TonTransactionTypeFragmentDeposit extends TonTransactionType {
   int get hashCode => overriddenHashCode;
 }
 
-/// The transaction is a withdrawal of earned Toncoins to Fragment
+/// The transaction is a withdrawal of earned Grams to Fragment
 @immutable
 final class TonTransactionTypeFragmentWithdrawal extends TonTransactionType {
   TonTransactionTypeFragmentWithdrawal({this.withdrawalState});
@@ -366,7 +367,7 @@ final class TonTransactionTypeUpgradedGiftSale extends TonTransactionType {
     required this.userId,
     this.gift,
     required this.commissionPerMille,
-    required this.commissionToncoinAmount,
+    required this.commissionGramAmount,
     required this.viaOffer,
   });
 
@@ -376,13 +377,13 @@ final class TonTransactionTypeUpgradedGiftSale extends TonTransactionType {
   /// [gift] The gift
   final UpgradedGift? gift;
 
-  /// [commissionPerMille] The number of Toncoins received by the Telegram for
-  /// each 1000 Toncoins received by the seller of the gift
+  /// [commissionPerMille] The number of Grams received by the Telegram for each
+  /// 1000 Grams received by the seller of the gift
   final int commissionPerMille;
 
-  /// [commissionToncoinAmount] The Toncoin amount that was received by the
-  /// Telegram; in the smallest units of the currency
-  final int commissionToncoinAmount;
+  /// [commissionGramAmount] The Gram amount that was received by the Telegram;
+  /// in the smallest units of the currency
+  final int commissionGramAmount;
 
   /// [viaOffer] True, if the gift was sold through a purchase offer
   final bool viaOffer;
@@ -397,7 +398,7 @@ final class TonTransactionTypeUpgradedGiftSale extends TonTransactionType {
     'user_id': userId,
     'gift': gift?.toJson(),
     'commission_per_mille': commissionPerMille,
-    'commission_toncoin_amount': commissionToncoinAmount,
+    'commission_gram_amount': commissionGramAmount,
     'via_offer': viaOffer,
     '@type': constructor,
   };
@@ -413,7 +414,7 @@ final class TonTransactionTypeUpgradedGiftSale extends TonTransactionType {
       userId: (json['user_id'] as int?) ?? 0,
       gift: UpgradedGift.fromJson(tdMapFromJson(json['gift'])),
       commissionPerMille: (json['commission_per_mille'] as int?) ?? 0,
-      commissionToncoinAmount: (json['commission_toncoin_amount'] as int?) ?? 0,
+      commissionGramAmount: (json['commission_gram_amount'] as int?) ?? 0,
       viaOffer: (json['via_offer'] as bool?) ?? false,
     );
   }

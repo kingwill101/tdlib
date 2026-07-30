@@ -1,9 +1,10 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
 /// Returns sparse positions of messages of the specified type in the chat to
-/// be used for shared media scroll implementation. Returns the results in
+/// be used for Shared Media scroll implementation. Returns the results in
 /// reverse chronological order (i.e., in order of decreasing message_id).
 /// Cannot be used in secret chats or with searchMessagesFilterFailedToSend
 /// filter without an enabled message database

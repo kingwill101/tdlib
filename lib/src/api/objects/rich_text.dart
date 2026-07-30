@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -15,15 +16,27 @@ sealed class RichText extends TdObject {
   /// Inherited by:
   /// [RichTextAnchor]
   /// [RichTextAnchorLink]
+  /// [RichTextBankCardNumber]
   /// [RichTextBold]
+  /// [RichTextBotCommand]
+  /// [RichTextCashtag]
+  /// [RichTextCustomEmoji]
+  /// [RichTextDateTime]
+  /// [RichTextDiff]
   /// [RichTextEmailAddress]
   /// [RichTextFixed]
+  /// [RichTextHashtag]
   /// [RichTextIcon]
   /// [RichTextItalic]
   /// [RichTextMarked]
+  /// [RichTextMathematicalExpression]
+  /// [RichTextMention]
+  /// [RichTextMentionName]
   /// [RichTextPhoneNumber]
   /// [RichTextPlain]
   /// [RichTextReference]
+  /// [RichTextReferenceLink]
+  /// [RichTextSpoiler]
   /// [RichTextStrikethrough]
   /// [RichTextSubscript]
   /// [RichTextSuperscript]
@@ -42,14 +55,35 @@ sealed class RichText extends TdObject {
       case RichTextAnchorLink.constructor:
         return RichTextAnchorLink.fromJson(json);
 
+      case RichTextBankCardNumber.constructor:
+        return RichTextBankCardNumber.fromJson(json);
+
       case RichTextBold.constructor:
         return RichTextBold.fromJson(json);
+
+      case RichTextBotCommand.constructor:
+        return RichTextBotCommand.fromJson(json);
+
+      case RichTextCashtag.constructor:
+        return RichTextCashtag.fromJson(json);
+
+      case RichTextCustomEmoji.constructor:
+        return RichTextCustomEmoji.fromJson(json);
+
+      case RichTextDateTime.constructor:
+        return RichTextDateTime.fromJson(json);
+
+      case RichTextDiff.constructor:
+        return RichTextDiff.fromJson(json);
 
       case RichTextEmailAddress.constructor:
         return RichTextEmailAddress.fromJson(json);
 
       case RichTextFixed.constructor:
         return RichTextFixed.fromJson(json);
+
+      case RichTextHashtag.constructor:
+        return RichTextHashtag.fromJson(json);
 
       case RichTextIcon.constructor:
         return RichTextIcon.fromJson(json);
@@ -60,6 +94,15 @@ sealed class RichText extends TdObject {
       case RichTextMarked.constructor:
         return RichTextMarked.fromJson(json);
 
+      case RichTextMathematicalExpression.constructor:
+        return RichTextMathematicalExpression.fromJson(json);
+
+      case RichTextMention.constructor:
+        return RichTextMention.fromJson(json);
+
+      case RichTextMentionName.constructor:
+        return RichTextMentionName.fromJson(json);
+
       case RichTextPhoneNumber.constructor:
         return RichTextPhoneNumber.fromJson(json);
 
@@ -68,6 +111,12 @@ sealed class RichText extends TdObject {
 
       case RichTextReference.constructor:
         return RichTextReference.fromJson(json);
+
+      case RichTextReferenceLink.constructor:
+        return RichTextReferenceLink.fromJson(json);
+
+      case RichTextSpoiler.constructor:
+        return RichTextSpoiler.fromJson(json);
 
       case RichTextStrikethrough.constructor:
         return RichTextStrikethrough.fromJson(json);
@@ -145,7 +194,7 @@ final class RichTextAnchorLink extends RichText {
   /// back to top
   final String anchorName;
 
-  /// [url] An HTTP URL, opening the anchor
+  /// [url] An HTTP URL that opens the anchor
   final String url;
 
   static const String constructor = 'richTextAnchorLink';
@@ -170,6 +219,47 @@ final class RichTextAnchorLink extends RichText {
       text: RichText.fromJson(tdMapFromJson(json['text'])),
       anchorName: (json['anchor_name'] as String?) ?? '',
       url: (json['url'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A bank card number
+@immutable
+final class RichTextBankCardNumber extends RichText {
+  RichTextBankCardNumber({this.text, required this.bankCardNumber});
+
+  /// [text] Text
+  final RichText? text;
+
+  /// [bankCardNumber] The number of the bank card
+  final String bankCardNumber;
+
+  static const String constructor = 'richTextBankCardNumber';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    'bank_card_number': bankCardNumber,
+    '@type': constructor,
+  };
+
+  static RichTextBankCardNumber? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextBankCardNumber(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      bankCardNumber: (json['bank_card_number'] as String?) ?? '',
     );
   }
 
@@ -214,7 +304,227 @@ final class RichTextBold extends RichText {
   int get hashCode => overriddenHashCode;
 }
 
-/// A rich text email link
+/// A bot command
+@immutable
+final class RichTextBotCommand extends RichText {
+  RichTextBotCommand({this.text, required this.botCommand});
+
+  /// [text] Text
+  final RichText? text;
+
+  /// [botCommand] The bot command
+  final String botCommand;
+
+  static const String constructor = 'richTextBotCommand';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    'bot_command': botCommand,
+    '@type': constructor,
+  };
+
+  static RichTextBotCommand? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextBotCommand(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      botCommand: (json['bot_command'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A cashtag
+@immutable
+final class RichTextCashtag extends RichText {
+  RichTextCashtag({this.text, required this.cashtag});
+
+  /// [text] Text
+  final RichText? text;
+
+  /// [cashtag] The cashtag
+  final String cashtag;
+
+  static const String constructor = 'richTextCashtag';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    'cashtag': cashtag,
+    '@type': constructor,
+  };
+
+  static RichTextCashtag? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextCashtag(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      cashtag: (json['cashtag'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A custom emoji
+@immutable
+final class RichTextCustomEmoji extends RichText {
+  RichTextCustomEmoji({
+    required this.customEmojiId,
+    required this.alternativeText,
+  });
+
+  /// [customEmojiId] Unique identifier of the custom emoji
+  final int customEmojiId;
+
+  /// [alternativeText] Alternative text for the custom emoji
+  final String alternativeText;
+
+  static const String constructor = 'richTextCustomEmoji';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'custom_emoji_id': customEmojiId.toString(),
+    'alternative_text': alternativeText,
+    '@type': constructor,
+  };
+
+  static RichTextCustomEmoji? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextCustomEmoji(
+      customEmojiId:
+          int.tryParse(
+            (json['custom_emoji_id'] as dynamic)?.toString() ?? '',
+          ) ??
+          0,
+      alternativeText: (json['alternative_text'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A date and time
+@immutable
+final class RichTextDateTime extends RichText {
+  RichTextDateTime({this.text, required this.unixTime, this.formattingType});
+
+  /// [text] Original text
+  final RichText? text;
+
+  /// [unixTime] Point in time (Unix timestamp) representing the date and time
+  final int unixTime;
+
+  /// [formattingType] Date and time formatting type; may be null if none and
+  /// the original text must not be changed
+  final DateTimeFormattingType? formattingType;
+
+  static const String constructor = 'richTextDateTime';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    'unix_time': unixTime,
+    'formatting_type': formattingType?.toJson(),
+    '@type': constructor,
+  };
+
+  static RichTextDateTime? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextDateTime(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      unixTime: (json['unix_time'] as int?) ?? 0,
+      formattingType: DateTimeFormattingType.fromJson(
+        tdMapFromJson(json['formatting_type']),
+      ),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A rich text replacing another rich text; not supported in inputRichMessage
+@immutable
+final class RichTextDiff extends RichText {
+  RichTextDiff({this.text, this.oldText});
+
+  /// [text] Text
+  final RichText? text;
+
+  /// [oldText] The old text
+  final RichText? oldText;
+
+  static const String constructor = 'richTextDiff';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    'old_text': oldText?.toJson(),
+    '@type': constructor,
+  };
+
+  static RichTextDiff? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextDiff(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      oldText: RichText.fromJson(tdMapFromJson(json['old_text'])),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A rich text email address
 @immutable
 final class RichTextEmailAddress extends RichText {
   RichTextEmailAddress({this.text, required this.emailAddress});
@@ -289,7 +599,48 @@ final class RichTextFixed extends RichText {
   int get hashCode => overriddenHashCode;
 }
 
-/// A small image inside the text
+/// A hashtag
+@immutable
+final class RichTextHashtag extends RichText {
+  RichTextHashtag({this.text, required this.hashtag});
+
+  /// [text] Text
+  final RichText? text;
+
+  /// [hashtag] The hashtag
+  final String hashtag;
+
+  static const String constructor = 'richTextHashtag';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    'hashtag': hashtag,
+    '@type': constructor,
+  };
+
+  static RichTextHashtag? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextHashtag(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      hashtag: (json['hashtag'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A small image inside the text; instant view only
 @immutable
 final class RichTextIcon extends RichText {
   RichTextIcon({this.document, required this.width, required this.height});
@@ -406,6 +757,124 @@ final class RichTextMarked extends RichText {
   int get hashCode => overriddenHashCode;
 }
 
+/// A mathematical expression
+@immutable
+final class RichTextMathematicalExpression extends RichText {
+  RichTextMathematicalExpression({required this.expression});
+
+  /// [expression] The expression in LaTeX format
+  final String expression;
+
+  static const String constructor = 'richTextMathematicalExpression';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'expression': expression,
+    '@type': constructor,
+  };
+
+  static RichTextMathematicalExpression? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextMathematicalExpression(
+      expression: (json['expression'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A mention of a Telegram user or chat by a username
+@immutable
+final class RichTextMention extends RichText {
+  RichTextMention({this.text, required this.username});
+
+  /// [text] Text
+  final RichText? text;
+
+  /// [username] The username
+  final String username;
+
+  static const String constructor = 'richTextMention';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    'username': username,
+    '@type': constructor,
+  };
+
+  static RichTextMention? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextMention(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      username: (json['username'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A rich text that serves as a mention of a user
+@immutable
+final class RichTextMentionName extends RichText {
+  RichTextMentionName({this.text, required this.userId});
+
+  /// [text] Text
+  final RichText? text;
+
+  /// [userId] Identifier of the mentioned user
+  final int userId;
+
+  static const String constructor = 'richTextMentionName';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    'user_id': userId,
+    '@type': constructor,
+  };
+
+  static RichTextMentionName? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextMentionName(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      userId: (json['user_id'] as int?) ?? 0,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// A rich text phone number
 @immutable
 final class RichTextPhoneNumber extends RichText {
@@ -481,20 +950,16 @@ final class RichTextPlain extends RichText {
   int get hashCode => overriddenHashCode;
 }
 
-/// A reference to a richTexts object on the same page
+/// A reference
 @immutable
 final class RichTextReference extends RichText {
-  RichTextReference({this.text, required this.anchorName, required this.url});
+  RichTextReference({required this.name, this.text});
 
-  /// [text] The text
+  /// [name] Reference name
+  final String name;
+
+  /// [text] Text of the reference
   final RichText? text;
-
-  /// [anchorName] The name of a richTextAnchor object, which is the first
-  /// element of the target richTexts object
-  final String anchorName;
-
-  /// [url] An HTTP URL, opening the reference
-  final String url;
 
   static const String constructor = 'richTextReference';
 
@@ -503,9 +968,8 @@ final class RichTextReference extends RichText {
 
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
+    'name': name,
     'text': text?.toJson(),
-    'anchor_name': anchorName,
-    'url': url,
     '@type': constructor,
   };
 
@@ -515,9 +979,94 @@ final class RichTextReference extends RichText {
     }
 
     return RichTextReference(
+      name: (json['name'] as String?) ?? '',
       text: RichText.fromJson(tdMapFromJson(json['text'])),
-      anchorName: (json['anchor_name'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A link to a reference on the same page
+@immutable
+final class RichTextReferenceLink extends RichText {
+  RichTextReferenceLink({
+    this.text,
+    required this.referenceName,
+    required this.url,
+  });
+
+  /// [text] The link text
+  final RichText? text;
+
+  /// [referenceName] The reference name
+  final String referenceName;
+
+  /// [url] An HTTP URL that opens the reference
+  final String url;
+
+  static const String constructor = 'richTextReferenceLink';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    'reference_name': referenceName,
+    'url': url,
+    '@type': constructor,
+  };
+
+  static RichTextReferenceLink? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextReferenceLink(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      referenceName: (json['reference_name'] as String?) ?? '',
       url: (json['url'] as String?) ?? '',
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A spoilered rich text
+@immutable
+final class RichTextSpoiler extends RichText {
+  RichTextSpoiler({this.text});
+
+  /// [text] Text
+  final RichText? text;
+
+  static const String constructor = 'richTextSpoiler';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    '@type': constructor,
+  };
+
+  static RichTextSpoiler? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return RichTextSpoiler(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
     );
   }
 
@@ -683,7 +1232,8 @@ final class RichTextUrl extends RichText {
   /// [url] URL
   final String url;
 
-  /// [isCached] True, if the URL has cached instant view server-side
+  /// [isCached] True, if the URL has cached instant view server-side; instant
+  /// view only
   final bool isCached;
 
   static const String constructor = 'richTextUrl';

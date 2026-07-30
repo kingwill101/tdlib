@@ -1,8 +1,10 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// Describes a block of an instant view for a web page
+/// Describes a block of an instant view for a web page or a block of a rich
+/// message
 @immutable
 sealed class PageBlock extends TdObject {
   const PageBlock();
@@ -30,15 +32,18 @@ sealed class PageBlock extends TdObject {
   /// [PageBlockKicker]
   /// [PageBlockList]
   /// [PageBlockMap]
+  /// [PageBlockMathematicalExpression]
   /// [PageBlockParagraph]
   /// [PageBlockPhoto]
   /// [PageBlockPreformatted]
   /// [PageBlockPullQuote]
   /// [PageBlockRelatedArticles]
+  /// [PageBlockSectionHeading]
   /// [PageBlockSlideshow]
   /// [PageBlockSubheader]
   /// [PageBlockSubtitle]
   /// [PageBlockTable]
+  /// [PageBlockThinking]
   /// [PageBlockTitle]
   /// [PageBlockVideo]
   /// [PageBlockVoiceNote]
@@ -99,6 +104,9 @@ sealed class PageBlock extends TdObject {
       case PageBlockMap.constructor:
         return PageBlockMap.fromJson(json);
 
+      case PageBlockMathematicalExpression.constructor:
+        return PageBlockMathematicalExpression.fromJson(json);
+
       case PageBlockParagraph.constructor:
         return PageBlockParagraph.fromJson(json);
 
@@ -114,6 +122,9 @@ sealed class PageBlock extends TdObject {
       case PageBlockRelatedArticles.constructor:
         return PageBlockRelatedArticles.fromJson(json);
 
+      case PageBlockSectionHeading.constructor:
+        return PageBlockSectionHeading.fromJson(json);
+
       case PageBlockSlideshow.constructor:
         return PageBlockSlideshow.fromJson(json);
 
@@ -125,6 +136,9 @@ sealed class PageBlock extends TdObject {
 
       case PageBlockTable.constructor:
         return PageBlockTable.fromJson(json);
+
+      case PageBlockThinking.constructor:
+        return PageBlockThinking.fromJson(json);
 
       case PageBlockTitle.constructor:
         return PageBlockTitle.fromJson(json);
@@ -189,16 +203,21 @@ final class PageBlockAnimation extends PageBlock {
     this.animation,
     this.caption,
     required this.needAutoplay,
+    required this.hasSpoiler,
   });
 
   /// [animation] Animation file; may be null
   final Animation? animation;
 
-  /// [caption] Animation caption
+  /// [caption] Animation caption; may be null if none
   final PageBlockCaption? caption;
 
   /// [needAutoplay] True, if the animation must be played automatically
   final bool needAutoplay;
+
+  /// [hasSpoiler] True, if the animation preview must be covered by a spoiler
+  /// animation
+  final bool hasSpoiler;
 
   static const String constructor = 'pageBlockAnimation';
 
@@ -210,6 +229,7 @@ final class PageBlockAnimation extends PageBlock {
     'animation': animation?.toJson(),
     'caption': caption?.toJson(),
     'need_autoplay': needAutoplay,
+    'has_spoiler': hasSpoiler,
     '@type': constructor,
   };
 
@@ -222,6 +242,7 @@ final class PageBlockAnimation extends PageBlock {
       animation: Animation.fromJson(tdMapFromJson(json['animation'])),
       caption: PageBlockCaption.fromJson(tdMapFromJson(json['caption'])),
       needAutoplay: (json['need_autoplay'] as bool?) ?? false,
+      hasSpoiler: (json['has_spoiler'] as bool?) ?? false,
     );
   }
 
@@ -240,7 +261,7 @@ final class PageBlockAudio extends PageBlock {
   /// [audio] Audio file; may be null
   final Audio? audio;
 
-  /// [caption] Audio file caption
+  /// [caption] Audio file caption; may be null if none
   final PageBlockCaption? caption;
 
   static const String constructor = 'pageBlockAudio';
@@ -273,7 +294,7 @@ final class PageBlockAudio extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// The author and publishing date of a page
+/// The author and publishing date of a page; instant view only
 @immutable
 final class PageBlockAuthorDate extends PageBlock {
   PageBlockAuthorDate({this.author, required this.publishDate});
@@ -318,12 +339,12 @@ final class PageBlockAuthorDate extends PageBlock {
 /// A block quote
 @immutable
 final class PageBlockBlockQuote extends PageBlock {
-  PageBlockBlockQuote({this.text, this.credit});
+  PageBlockBlockQuote({required this.blocks, this.credit});
 
-  /// [text] Quote text
-  final RichText? text;
+  /// [blocks] Quote blocks
+  final List<PageBlock> blocks;
 
-  /// [credit] Quote credit
+  /// [credit] Quote credit; may be null if none
   final RichText? credit;
 
   static const String constructor = 'pageBlockBlockQuote';
@@ -333,7 +354,7 @@ final class PageBlockBlockQuote extends PageBlock {
 
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
-    'text': text?.toJson(),
+    'blocks': blocks.map((item) => item.toJson()).toList(),
     'credit': credit?.toJson(),
     '@type': constructor,
   };
@@ -344,7 +365,11 @@ final class PageBlockBlockQuote extends PageBlock {
     }
 
     return PageBlockBlockQuote(
-      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      blocks: List<PageBlock>.from(
+        tdListFromJson(json['blocks'])
+            .map((item) => PageBlock.fromJson(tdMapFromJson(item)))
+            .whereType<PageBlock>(),
+      ),
       credit: RichText.fromJson(tdMapFromJson(json['credit'])),
     );
   }
@@ -356,7 +381,7 @@ final class PageBlockBlockQuote extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// A link to a chat
+/// A link to a chat; instant view only
 @immutable
 final class PageBlockChatLink extends PageBlock {
   PageBlockChatLink({
@@ -417,12 +442,12 @@ final class PageBlockChatLink extends PageBlock {
 /// A collage
 @immutable
 final class PageBlockCollage extends PageBlock {
-  PageBlockCollage({required this.pageBlocks, this.caption});
+  PageBlockCollage({required this.blocks, this.caption});
 
-  /// [pageBlocks] Collage item contents
-  final List<PageBlock> pageBlocks;
+  /// [blocks] Collage item contents
+  final List<PageBlock> blocks;
 
-  /// [caption] Block caption
+  /// [caption] Block caption; may be null if none
   final PageBlockCaption? caption;
 
   static const String constructor = 'pageBlockCollage';
@@ -432,7 +457,7 @@ final class PageBlockCollage extends PageBlock {
 
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
-    'page_blocks': pageBlocks.map((item) => item.toJson()).toList(),
+    'blocks': blocks.map((item) => item.toJson()).toList(),
     'caption': caption?.toJson(),
     '@type': constructor,
   };
@@ -443,8 +468,8 @@ final class PageBlockCollage extends PageBlock {
     }
 
     return PageBlockCollage(
-      pageBlocks: List<PageBlock>.from(
-        tdListFromJson(json['page_blocks'])
+      blocks: List<PageBlock>.from(
+        tdListFromJson(json['blocks'])
             .map((item) => PageBlock.fromJson(tdMapFromJson(item)))
             .whereType<PageBlock>(),
       ),
@@ -459,7 +484,7 @@ final class PageBlockCollage extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// A page cover
+/// A page cover; instant view only
 @immutable
 final class PageBlockCover extends PageBlock {
   PageBlockCover({this.cover});
@@ -498,17 +523,13 @@ final class PageBlockCover extends PageBlock {
 /// A collapsible block
 @immutable
 final class PageBlockDetails extends PageBlock {
-  PageBlockDetails({
-    this.header,
-    required this.pageBlocks,
-    required this.isOpen,
-  });
+  PageBlockDetails({this.header, required this.blocks, required this.isOpen});
 
   /// [header] Always visible heading for the block
   final RichText? header;
 
-  /// [pageBlocks] Block contents
-  final List<PageBlock> pageBlocks;
+  /// [blocks] Block contents
+  final List<PageBlock> blocks;
 
   /// [isOpen] True, if the block is open by default
   final bool isOpen;
@@ -521,7 +542,7 @@ final class PageBlockDetails extends PageBlock {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'header': header?.toJson(),
-    'page_blocks': pageBlocks.map((item) => item.toJson()).toList(),
+    'blocks': blocks.map((item) => item.toJson()).toList(),
     'is_open': isOpen,
     '@type': constructor,
   };
@@ -533,8 +554,8 @@ final class PageBlockDetails extends PageBlock {
 
     return PageBlockDetails(
       header: RichText.fromJson(tdMapFromJson(json['header'])),
-      pageBlocks: List<PageBlock>.from(
-        tdListFromJson(json['page_blocks'])
+      blocks: List<PageBlock>.from(
+        tdListFromJson(json['blocks'])
             .map((item) => PageBlock.fromJson(tdMapFromJson(item)))
             .whereType<PageBlock>(),
       ),
@@ -577,7 +598,7 @@ final class PageBlockDivider extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// An embedded web page
+/// An embedded web page; instant view only
 @immutable
 final class PageBlockEmbedded extends PageBlock {
   PageBlockEmbedded({
@@ -606,7 +627,7 @@ final class PageBlockEmbedded extends PageBlock {
   /// [height] Block height; 0 if unknown
   final int height;
 
-  /// [caption] Block caption
+  /// [caption] Block caption; may be null if none
   final PageBlockCaption? caption;
 
   /// [isFullWidth] True, if the block must be full width
@@ -657,7 +678,7 @@ final class PageBlockEmbedded extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// An embedded post
+/// An embedded post; instant view only
 @immutable
 final class PageBlockEmbeddedPost extends PageBlock {
   PageBlockEmbeddedPost({
@@ -665,7 +686,7 @@ final class PageBlockEmbeddedPost extends PageBlock {
     required this.author,
     this.authorPhoto,
     required this.date,
-    required this.pageBlocks,
+    required this.blocks,
     this.caption,
   });
 
@@ -682,10 +703,10 @@ final class PageBlockEmbeddedPost extends PageBlock {
   /// unknown
   final int date;
 
-  /// [pageBlocks] Post content
-  final List<PageBlock> pageBlocks;
+  /// [blocks] Post content
+  final List<PageBlock> blocks;
 
-  /// [caption] Post caption
+  /// [caption] Post caption; may be null if none
   final PageBlockCaption? caption;
 
   static const String constructor = 'pageBlockEmbeddedPost';
@@ -699,7 +720,7 @@ final class PageBlockEmbeddedPost extends PageBlock {
     'author': author,
     'author_photo': authorPhoto?.toJson(),
     'date': date,
-    'page_blocks': pageBlocks.map((item) => item.toJson()).toList(),
+    'blocks': blocks.map((item) => item.toJson()).toList(),
     'caption': caption?.toJson(),
     '@type': constructor,
   };
@@ -714,8 +735,8 @@ final class PageBlockEmbeddedPost extends PageBlock {
       author: (json['author'] as String?) ?? '',
       authorPhoto: Photo.fromJson(tdMapFromJson(json['author_photo'])),
       date: (json['date'] as int?) ?? 0,
-      pageBlocks: List<PageBlock>.from(
-        tdListFromJson(json['page_blocks'])
+      blocks: List<PageBlock>.from(
+        tdListFromJson(json['blocks'])
             .map((item) => PageBlock.fromJson(tdMapFromJson(item)))
             .whereType<PageBlock>(),
       ),
@@ -766,7 +787,7 @@ final class PageBlockFooter extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// A header
+/// A header; instant view only
 @immutable
 final class PageBlockHeader extends PageBlock {
   PageBlockHeader({this.header});
@@ -802,7 +823,7 @@ final class PageBlockHeader extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// A kicker
+/// A kicker; instant view only
 @immutable
 final class PageBlockKicker extends PageBlock {
   PageBlockKicker({this.kicker});
@@ -901,7 +922,7 @@ final class PageBlockMap extends PageBlock {
   /// [height] Map height
   final int height;
 
-  /// [caption] Block caption
+  /// [caption] Block caption; may be null if none
   final PageBlockCaption? caption;
 
   static const String constructor = 'pageBlockMap';
@@ -930,6 +951,42 @@ final class PageBlockMap extends PageBlock {
       width: (json['width'] as int?) ?? 0,
       height: (json['height'] as int?) ?? 0,
       caption: PageBlockCaption.fromJson(tdMapFromJson(json['caption'])),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A mathematical expression
+@immutable
+final class PageBlockMathematicalExpression extends PageBlock {
+  PageBlockMathematicalExpression({required this.expression});
+
+  /// [expression] The expression in LaTeX format
+  final String expression;
+
+  static const String constructor = 'pageBlockMathematicalExpression';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'expression': expression,
+    '@type': constructor,
+  };
+
+  static PageBlockMathematicalExpression? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return PageBlockMathematicalExpression(
+      expression: (json['expression'] as String?) ?? '',
     );
   }
 
@@ -979,16 +1036,26 @@ final class PageBlockParagraph extends PageBlock {
 /// A photo
 @immutable
 final class PageBlockPhoto extends PageBlock {
-  PageBlockPhoto({this.photo, this.caption, required this.url});
+  PageBlockPhoto({
+    this.photo,
+    this.caption,
+    required this.url,
+    required this.hasSpoiler,
+  });
 
   /// [photo] Photo file; may be null
   final Photo? photo;
 
-  /// [caption] Photo caption
+  /// [caption] Photo caption; may be null if none
   final PageBlockCaption? caption;
 
-  /// [url] URL that needs to be opened when the photo is clicked
+  /// [url] URL that needs to be opened when the photo is clicked; instant view
+  /// only
   final String url;
+
+  /// [hasSpoiler] True, if the photo preview must be covered by a spoiler
+  /// animation
+  final bool hasSpoiler;
 
   static const String constructor = 'pageBlockPhoto';
 
@@ -1000,6 +1067,7 @@ final class PageBlockPhoto extends PageBlock {
     'photo': photo?.toJson(),
     'caption': caption?.toJson(),
     'url': url,
+    'has_spoiler': hasSpoiler,
     '@type': constructor,
   };
 
@@ -1012,6 +1080,7 @@ final class PageBlockPhoto extends PageBlock {
       photo: Photo.fromJson(tdMapFromJson(json['photo'])),
       caption: PageBlockCaption.fromJson(tdMapFromJson(json['caption'])),
       url: (json['url'] as String?) ?? '',
+      hasSpoiler: (json['has_spoiler'] as bool?) ?? false,
     );
   }
 
@@ -1071,7 +1140,7 @@ final class PageBlockPullQuote extends PageBlock {
   /// [text] Quote text
   final RichText? text;
 
-  /// [credit] Quote credit
+  /// [credit] Quote credit; may be null if none
   final RichText? credit;
 
   static const String constructor = 'pageBlockPullQuote';
@@ -1104,7 +1173,7 @@ final class PageBlockPullQuote extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// Related articles
+/// Related articles; instant view only
 @immutable
 final class PageBlockRelatedArticles extends PageBlock {
   PageBlockRelatedArticles({this.header, required this.articles});
@@ -1151,15 +1220,57 @@ final class PageBlockRelatedArticles extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
+/// A section heading
+@immutable
+final class PageBlockSectionHeading extends PageBlock {
+  PageBlockSectionHeading({this.text, required this.size});
+
+  /// [text] Text of the section heading
+  final RichText? text;
+
+  /// [size] Relative size of the text font; 1-6, 1 is the largest, 6 is the
+  /// smallest
+  final int size;
+
+  static const String constructor = 'pageBlockSectionHeading';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    'size': size,
+    '@type': constructor,
+  };
+
+  static PageBlockSectionHeading? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return PageBlockSectionHeading(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+      size: (json['size'] as int?) ?? 0,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// A slideshow
 @immutable
 final class PageBlockSlideshow extends PageBlock {
-  PageBlockSlideshow({required this.pageBlocks, this.caption});
+  PageBlockSlideshow({required this.blocks, this.caption});
 
-  /// [pageBlocks] Slideshow item contents
-  final List<PageBlock> pageBlocks;
+  /// [blocks] Slideshow item contents
+  final List<PageBlock> blocks;
 
-  /// [caption] Block caption
+  /// [caption] Block caption; may be null if none
   final PageBlockCaption? caption;
 
   static const String constructor = 'pageBlockSlideshow';
@@ -1169,7 +1280,7 @@ final class PageBlockSlideshow extends PageBlock {
 
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
-    'page_blocks': pageBlocks.map((item) => item.toJson()).toList(),
+    'blocks': blocks.map((item) => item.toJson()).toList(),
     'caption': caption?.toJson(),
     '@type': constructor,
   };
@@ -1180,8 +1291,8 @@ final class PageBlockSlideshow extends PageBlock {
     }
 
     return PageBlockSlideshow(
-      pageBlocks: List<PageBlock>.from(
-        tdListFromJson(json['page_blocks'])
+      blocks: List<PageBlock>.from(
+        tdListFromJson(json['blocks'])
             .map((item) => PageBlock.fromJson(tdMapFromJson(item)))
             .whereType<PageBlock>(),
       ),
@@ -1196,7 +1307,7 @@ final class PageBlockSlideshow extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// A subheader
+/// A subheader; instant view only
 @immutable
 final class PageBlockSubheader extends PageBlock {
   PageBlockSubheader({this.subheader});
@@ -1232,7 +1343,7 @@ final class PageBlockSubheader extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// The subtitle of a page
+/// The subtitle of a page; instant view only
 @immutable
 final class PageBlockSubtitle extends PageBlock {
   PageBlockSubtitle({this.subtitle});
@@ -1278,7 +1389,7 @@ final class PageBlockTable extends PageBlock {
     required this.isStriped,
   });
 
-  /// [caption] Table caption
+  /// [caption] Table caption; may be null if none
   final RichText? caption;
 
   /// [cells] Table cells
@@ -1339,7 +1450,43 @@ final class PageBlockTable extends PageBlock {
   int get hashCode => overriddenHashCode;
 }
 
-/// The title of a page
+/// A "Thinking..." placeholder; for pending rich messages only
+@immutable
+final class PageBlockThinking extends PageBlock {
+  PageBlockThinking({this.text});
+
+  /// [text] Text of the placeholder
+  final RichText? text;
+
+  static const String constructor = 'pageBlockThinking';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'text': text?.toJson(),
+    '@type': constructor,
+  };
+
+  static PageBlockThinking? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return PageBlockThinking(
+      text: RichText.fromJson(tdMapFromJson(json['text'])),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// The title of a page; instant view only
 @immutable
 final class PageBlockTitle extends PageBlock {
   PageBlockTitle({this.title});
@@ -1383,12 +1530,13 @@ final class PageBlockVideo extends PageBlock {
     this.caption,
     required this.needAutoplay,
     required this.isLooped,
+    required this.hasSpoiler,
   });
 
   /// [video] Video file; may be null
   final Video? video;
 
-  /// [caption] Video caption
+  /// [caption] Video caption; may be null if none
   final PageBlockCaption? caption;
 
   /// [needAutoplay] True, if the video must be played automatically
@@ -1396,6 +1544,10 @@ final class PageBlockVideo extends PageBlock {
 
   /// [isLooped] True, if the video must be looped
   final bool isLooped;
+
+  /// [hasSpoiler] True, if the video preview must be covered by a spoiler
+  /// animation
+  final bool hasSpoiler;
 
   static const String constructor = 'pageBlockVideo';
 
@@ -1408,6 +1560,7 @@ final class PageBlockVideo extends PageBlock {
     'caption': caption?.toJson(),
     'need_autoplay': needAutoplay,
     'is_looped': isLooped,
+    'has_spoiler': hasSpoiler,
     '@type': constructor,
   };
 
@@ -1421,6 +1574,7 @@ final class PageBlockVideo extends PageBlock {
       caption: PageBlockCaption.fromJson(tdMapFromJson(json['caption'])),
       needAutoplay: (json['need_autoplay'] as bool?) ?? false,
       isLooped: (json['is_looped'] as bool?) ?? false,
+      hasSpoiler: (json['has_spoiler'] as bool?) ?? false,
     );
   }
 
@@ -1439,7 +1593,7 @@ final class PageBlockVoiceNote extends PageBlock {
   /// [voiceNote] Voice note; may be null
   final VoiceNote? voiceNote;
 
-  /// [caption] Voice note caption
+  /// [caption] Voice note caption; may be null if none
   final PageBlockCaption? caption;
 
   static const String constructor = 'pageBlockVoiceNote';

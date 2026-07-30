@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -22,10 +23,12 @@ sealed class InputMessageContent extends TdObject {
   /// [InputMessageForwarded]
   /// [InputMessageGame]
   /// [InputMessageInvoice]
+  /// [InputMessageLiveLocation]
   /// [InputMessageLocation]
   /// [InputMessagePaidMedia]
   /// [InputMessagePhoto]
   /// [InputMessagePoll]
+  /// [InputMessageRichMessage]
   /// [InputMessageStakeDice]
   /// [InputMessageSticker]
   /// [InputMessageStory]
@@ -67,6 +70,9 @@ sealed class InputMessageContent extends TdObject {
       case InputMessageInvoice.constructor:
         return InputMessageInvoice.fromJson(json);
 
+      case InputMessageLiveLocation.constructor:
+        return InputMessageLiveLocation.fromJson(json);
+
       case InputMessageLocation.constructor:
         return InputMessageLocation.fromJson(json);
 
@@ -78,6 +84,9 @@ sealed class InputMessageContent extends TdObject {
 
       case InputMessagePoll.constructor:
         return InputMessagePoll.fromJson(json);
+
+      case InputMessageRichMessage.constructor:
+        return InputMessageRichMessage.fromJson(json);
 
       case InputMessageStakeDice.constructor:
         return InputMessageStakeDice.fromJson(json);
@@ -120,34 +129,13 @@ sealed class InputMessageContent extends TdObject {
 final class InputMessageAnimation extends InputMessageContent {
   InputMessageAnimation({
     this.animation,
-    this.thumbnail,
-    required this.addedStickerFileIds,
-    required this.duration,
-    required this.width,
-    required this.height,
     this.caption,
     required this.showCaptionAboveMedia,
     required this.hasSpoiler,
   });
 
-  /// [animation] Animation file to be sent
-  final InputFile? animation;
-
-  /// [thumbnail] Animation thumbnail; pass null to skip thumbnail uploading
-  final InputThumbnail? thumbnail;
-
-  /// [addedStickerFileIds] File identifiers of the stickers added to the
-  /// animation, if applicable
-  final List<int> addedStickerFileIds;
-
-  /// [duration] Duration of the animation, in seconds
-  final int duration;
-
-  /// [width] Width of the animation; may be replaced by the server
-  final int width;
-
-  /// [height] Height of the animation; may be replaced by the server
-  final int height;
+  /// [animation] The animation to be sent
+  final InputAnimation? animation;
 
   /// [caption] Animation caption; pass null to use an empty caption;
   /// 0-getOption("message_caption_length_max") characters
@@ -170,11 +158,6 @@ final class InputMessageAnimation extends InputMessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'animation': animation?.toJson(),
-    'thumbnail': thumbnail?.toJson(),
-    'added_sticker_file_ids': addedStickerFileIds.map((item) => item).toList(),
-    'duration': duration,
-    'width': width,
-    'height': height,
     'caption': caption?.toJson(),
     'show_caption_above_media': showCaptionAboveMedia,
     'has_spoiler': hasSpoiler,
@@ -187,16 +170,7 @@ final class InputMessageAnimation extends InputMessageContent {
     }
 
     return InputMessageAnimation(
-      animation: InputFile.fromJson(tdMapFromJson(json['animation'])),
-      thumbnail: InputThumbnail.fromJson(tdMapFromJson(json['thumbnail'])),
-      addedStickerFileIds: List<int>.from(
-        tdListFromJson(
-          json['added_sticker_file_ids'],
-        ).map((item) => int.tryParse((item as dynamic)?.toString() ?? '') ?? 0),
-      ),
-      duration: (json['duration'] as int?) ?? 0,
-      width: (json['width'] as int?) ?? 0,
-      height: (json['height'] as int?) ?? 0,
+      animation: InputAnimation.fromJson(tdMapFromJson(json['animation'])),
       caption: FormattedText.fromJson(tdMapFromJson(json['caption'])),
       showCaptionAboveMedia:
           (json['show_caption_above_media'] as bool?) ?? false,
@@ -214,32 +188,10 @@ final class InputMessageAnimation extends InputMessageContent {
 /// An audio message
 @immutable
 final class InputMessageAudio extends InputMessageContent {
-  InputMessageAudio({
-    this.audio,
-    this.albumCoverThumbnail,
-    required this.duration,
-    required this.title,
-    required this.performer,
-    this.caption,
-  });
+  InputMessageAudio({this.audio, this.caption});
 
-  /// [audio] Audio file to be sent
-  final InputFile? audio;
-
-  /// [albumCoverThumbnail] Thumbnail of the cover for the album; pass null to
-  /// skip thumbnail uploading
-  final InputThumbnail? albumCoverThumbnail;
-
-  /// [duration] Duration of the audio, in seconds; may be replaced by the
-  /// server
-  final int duration;
-
-  /// [title] Title of the audio; 0-64 characters; may be replaced by the server
-  final String title;
-
-  /// [performer] Performer of the audio; 0-64 characters, may be replaced by
-  /// the server
-  final String performer;
+  /// [audio] Audio to be sent
+  final InputAudio? audio;
 
   /// [caption] Audio caption; pass null to use an empty caption;
   /// 0-getOption("message_caption_length_max") characters
@@ -253,10 +205,6 @@ final class InputMessageAudio extends InputMessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'audio': audio?.toJson(),
-    'album_cover_thumbnail': albumCoverThumbnail?.toJson(),
-    'duration': duration,
-    'title': title,
-    'performer': performer,
     'caption': caption?.toJson(),
     '@type': constructor,
   };
@@ -267,13 +215,7 @@ final class InputMessageAudio extends InputMessageContent {
     }
 
     return InputMessageAudio(
-      audio: InputFile.fromJson(tdMapFromJson(json['audio'])),
-      albumCoverThumbnail: InputThumbnail.fromJson(
-        tdMapFromJson(json['album_cover_thumbnail']),
-      ),
-      duration: (json['duration'] as int?) ?? 0,
-      title: (json['title'] as String?) ?? '',
-      performer: (json['performer'] as String?) ?? '',
+      audio: InputAudio.fromJson(tdMapFromJson(json['audio'])),
       caption: FormattedText.fromJson(tdMapFromJson(json['caption'])),
     );
   }
@@ -367,7 +309,7 @@ final class InputMessageDice extends InputMessageContent {
   /// [emoji] Emoji on which the dice throw animation is based
   final String emoji;
 
-  /// [clearDraft] True, if the chat message draft must be deleted
+  /// [clearDraft] Pass true to delete message draft in the chat
   final bool clearDraft;
 
   static const String constructor = 'inputMessageDice';
@@ -403,23 +345,10 @@ final class InputMessageDice extends InputMessageContent {
 /// A document message (general file)
 @immutable
 final class InputMessageDocument extends InputMessageContent {
-  InputMessageDocument({
-    this.document,
-    this.thumbnail,
-    required this.disableContentTypeDetection,
-    this.caption,
-  });
+  InputMessageDocument({this.document, this.caption});
 
   /// [document] Document to be sent
-  final InputFile? document;
-
-  /// [thumbnail] Document thumbnail; pass null to skip thumbnail uploading
-  final InputThumbnail? thumbnail;
-
-  /// [disableContentTypeDetection] Pass true to disable automatic file type
-  /// detection and send the document as a file. Always true for files sent to
-  /// secret chats
-  final bool disableContentTypeDetection;
+  final InputDocument? document;
 
   /// [caption] Document caption; pass null to use an empty caption;
   /// 0-getOption("message_caption_length_max") characters
@@ -433,8 +362,6 @@ final class InputMessageDocument extends InputMessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'document': document?.toJson(),
-    'thumbnail': thumbnail?.toJson(),
-    'disable_content_type_detection': disableContentTypeDetection,
     'caption': caption?.toJson(),
     '@type': constructor,
   };
@@ -445,10 +372,7 @@ final class InputMessageDocument extends InputMessageContent {
     }
 
     return InputMessageDocument(
-      document: InputFile.fromJson(tdMapFromJson(json['document'])),
-      thumbnail: InputThumbnail.fromJson(tdMapFromJson(json['thumbnail'])),
-      disableContentTypeDetection:
-          (json['disable_content_type_detection'] as bool?) ?? false,
+      document: InputDocument.fromJson(tdMapFromJson(json['document'])),
       caption: FormattedText.fromJson(tdMapFromJson(json['caption'])),
     );
   }
@@ -696,32 +620,51 @@ final class InputMessageInvoice extends InputMessageContent {
   int get hashCode => overriddenHashCode;
 }
 
+/// A message with a live location
+@immutable
+final class InputMessageLiveLocation extends InputMessageContent {
+  InputMessageLiveLocation({this.location});
+
+  /// [location] Initial state of the live location to be sent. Live period must
+  /// be equal to 0x7FFFFFFF for permanent live locations, or between 60 and
+  /// 86400
+  final LiveLocation? location;
+
+  static const String constructor = 'inputMessageLiveLocation';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'location': location?.toJson(),
+    '@type': constructor,
+  };
+
+  static InputMessageLiveLocation? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return InputMessageLiveLocation(
+      location: LiveLocation.fromJson(tdMapFromJson(json['location'])),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// A message with a location
 @immutable
 final class InputMessageLocation extends InputMessageContent {
-  InputMessageLocation({
-    this.location,
-    required this.livePeriod,
-    required this.heading,
-    required this.proximityAlertRadius,
-  });
+  InputMessageLocation({this.location});
 
   /// [location] Location to be sent
   final Location? location;
-
-  /// [livePeriod] Period for which the location can be updated, in seconds;
-  /// must be between 60 and 86400 for a temporary live location, 0x7FFFFFFF for
-  /// permanent live location, and 0 otherwise
-  final int livePeriod;
-
-  /// [heading] For live locations, a direction in which the location moves, in
-  /// degrees; 1-360. Pass 0 if unknown
-  final int heading;
-
-  /// [proximityAlertRadius] For live locations, a maximum distance to another
-  /// chat member for proximity alerts, in meters (0-100000). Pass 0 if the
-  /// notification is disabled. Can't be enabled in channels and Saved Messages
-  final int proximityAlertRadius;
 
   static const String constructor = 'inputMessageLocation';
 
@@ -731,9 +674,6 @@ final class InputMessageLocation extends InputMessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'location': location?.toJson(),
-    'live_period': livePeriod,
-    'heading': heading,
-    'proximity_alert_radius': proximityAlertRadius,
     '@type': constructor,
   };
 
@@ -744,9 +684,6 @@ final class InputMessageLocation extends InputMessageContent {
 
     return InputMessageLocation(
       location: Location.fromJson(tdMapFromJson(json['location'])),
-      livePeriod: (json['live_period'] as int?) ?? 0,
-      heading: (json['heading'] as int?) ?? 0,
-      proximityAlertRadius: (json['proximity_alert_radius'] as int?) ?? 0,
     );
   }
 
@@ -834,39 +771,14 @@ final class InputMessagePaidMedia extends InputMessageContent {
 final class InputMessagePhoto extends InputMessageContent {
   InputMessagePhoto({
     this.photo,
-    this.thumbnail,
-    this.video,
-    required this.addedStickerFileIds,
-    required this.width,
-    required this.height,
     this.caption,
     required this.showCaptionAboveMedia,
     this.selfDestructType,
     required this.hasSpoiler,
   });
 
-  /// [photo] Photo to send. The photo must be at most 10 MB in size. The
-  /// photo's width and height must not exceed 10000 in total. Width and height
-  /// ratio must be at most 20
-  final InputFile? photo;
-
-  /// [thumbnail] Photo thumbnail to be sent; pass null to skip thumbnail
-  /// uploading. The thumbnail is sent to the other party only in secret chats
-  final InputThumbnail? thumbnail;
-
-  /// [video] Video of the live photo; not supported in secret chats; pass null
-  /// if the photo isn't a live photo
-  final InputFile? video;
-
-  /// [addedStickerFileIds] File identifiers of the stickers added to the photo,
-  /// if applicable
-  final List<int> addedStickerFileIds;
-
-  /// [width] Photo width
-  final int width;
-
-  /// [height] Photo height
-  final int height;
+  /// [photo] Photo to be sent
+  final InputPhoto? photo;
 
   /// [caption] Photo caption; pass null to use an empty caption;
   /// 0-getOption("message_caption_length_max") characters
@@ -893,11 +805,6 @@ final class InputMessagePhoto extends InputMessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'photo': photo?.toJson(),
-    'thumbnail': thumbnail?.toJson(),
-    'video': video?.toJson(),
-    'added_sticker_file_ids': addedStickerFileIds.map((item) => item).toList(),
-    'width': width,
-    'height': height,
     'caption': caption?.toJson(),
     'show_caption_above_media': showCaptionAboveMedia,
     'self_destruct_type': selfDestructType?.toJson(),
@@ -911,16 +818,7 @@ final class InputMessagePhoto extends InputMessageContent {
     }
 
     return InputMessagePhoto(
-      photo: InputFile.fromJson(tdMapFromJson(json['photo'])),
-      thumbnail: InputThumbnail.fromJson(tdMapFromJson(json['thumbnail'])),
-      video: InputFile.fromJson(tdMapFromJson(json['video'])),
-      addedStickerFileIds: List<int>.from(
-        tdListFromJson(
-          json['added_sticker_file_ids'],
-        ).map((item) => int.tryParse((item as dynamic)?.toString() ?? '') ?? 0),
-      ),
-      width: (json['width'] as int?) ?? 0,
-      height: (json['height'] as int?) ?? 0,
+      photo: InputPhoto.fromJson(tdMapFromJson(json['photo'])),
       caption: FormattedText.fromJson(tdMapFromJson(json['caption'])),
       showCaptionAboveMedia:
           (json['show_caption_above_media'] as bool?) ?? false,
@@ -975,10 +873,10 @@ final class InputMessagePoll extends InputMessageContent {
   final FormattedText? description;
 
   /// [media] Media attached to the poll; pass null if none. Must be one of the
-  /// following types: inputMessageAnimation, inputMessageAudio,
-  /// inputMessageDocument, non-live inputMessageLocation, inputMessagePhoto,
-  /// inputMessageVenue, or inputMessageVideo without caption
-  final InputMessageContent? media;
+  /// following types: inputPollMediaAnimation, inputPollMediaAudio,
+  /// inputPollMediaDocument, inputPollMediaLocation, inputPollMediaPhoto,
+  /// inputPollMediaVenue, or inputPollMediaVideo without caption
+  final InputPollMedia? media;
 
   /// [isAnonymous] True, if the poll voters are anonymous. Non-anonymous polls
   /// can't be sent or forwarded to channels
@@ -1063,7 +961,7 @@ final class InputMessagePoll extends InputMessageContent {
             .whereType<InputPollOption>(),
       ),
       description: FormattedText.fromJson(tdMapFromJson(json['description'])),
-      media: InputMessageContent.fromJson(tdMapFromJson(json['media'])),
+      media: InputPollMedia.fromJson(tdMapFromJson(json['media'])),
       isAnonymous: (json['is_anonymous'] as bool?) ?? false,
       allowsMultipleAnswers:
           (json['allows_multiple_answers'] as bool?) ?? false,
@@ -1091,12 +989,53 @@ final class InputMessagePoll extends InputMessageContent {
   int get hashCode => overriddenHashCode;
 }
 
+/// A rich message
+@immutable
+final class InputMessageRichMessage extends InputMessageContent {
+  InputMessageRichMessage({this.message, required this.clearDraft});
+
+  /// [message] The rich message to send
+  final InputRichMessage? message;
+
+  /// [clearDraft] Pass true to delete message draft in the chat
+  final bool clearDraft;
+
+  static const String constructor = 'inputMessageRichMessage';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'message': message?.toJson(),
+    'clear_draft': clearDraft,
+    '@type': constructor,
+  };
+
+  static InputMessageRichMessage? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return InputMessageRichMessage(
+      message: InputRichMessage.fromJson(tdMapFromJson(json['message'])),
+      clearDraft: (json['clear_draft'] as bool?) ?? false,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// A stake dice message
 @immutable
 final class InputMessageStakeDice extends InputMessageContent {
   InputMessageStakeDice({
     required this.stateHash,
-    required this.stakeToncoinAmount,
+    required this.stakeGramAmount,
     required this.clearDraft,
   });
 
@@ -1105,12 +1044,12 @@ final class InputMessageStakeDice extends InputMessageContent {
   /// requested using getStakeDiceState
   final String stateHash;
 
-  /// [stakeToncoinAmount] The Toncoin amount that will be staked; in the
-  /// smallest units of the currency. Must be in the range
+  /// [stakeGramAmount] The TON Gram amount that will be staked; in the smallest
+  /// units of the currency. Must be in the range
   /// getOption("stake_dice_stake_amount_min")-getOption("stake_dice_stake_amount_max")
-  final int stakeToncoinAmount;
+  final int stakeGramAmount;
 
-  /// [clearDraft] True, if the chat message draft must be deleted
+  /// [clearDraft] Pass true to delete message draft in the chat
   final bool clearDraft;
 
   static const String constructor = 'inputMessageStakeDice';
@@ -1121,7 +1060,7 @@ final class InputMessageStakeDice extends InputMessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'state_hash': stateHash,
-    'stake_toncoin_amount': stakeToncoinAmount,
+    'stake_gram_amount': stakeGramAmount,
     'clear_draft': clearDraft,
     '@type': constructor,
   };
@@ -1133,7 +1072,7 @@ final class InputMessageStakeDice extends InputMessageContent {
 
     return InputMessageStakeDice(
       stateHash: (json['state_hash'] as String?) ?? '',
-      stakeToncoinAmount: (json['stake_toncoin_amount'] as int?) ?? 0,
+      stakeGramAmount: (json['stake_gram_amount'] as int?) ?? 0,
       clearDraft: (json['clear_draft'] as bool?) ?? false,
     );
   }
@@ -1148,25 +1087,10 @@ final class InputMessageStakeDice extends InputMessageContent {
 /// A sticker message
 @immutable
 final class InputMessageSticker extends InputMessageContent {
-  InputMessageSticker({
-    this.sticker,
-    this.thumbnail,
-    required this.width,
-    required this.height,
-    required this.emoji,
-  });
+  InputMessageSticker({this.sticker, required this.emoji});
 
   /// [sticker] Sticker to be sent
-  final InputFile? sticker;
-
-  /// [thumbnail] Sticker thumbnail; pass null to skip thumbnail uploading
-  final InputThumbnail? thumbnail;
-
-  /// [width] Sticker width
-  final int width;
-
-  /// [height] Sticker height
-  final int height;
+  final InputSticker? sticker;
 
   /// [emoji] Emoji used to choose the sticker
   final String emoji;
@@ -1179,9 +1103,6 @@ final class InputMessageSticker extends InputMessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'sticker': sticker?.toJson(),
-    'thumbnail': thumbnail?.toJson(),
-    'width': width,
-    'height': height,
     'emoji': emoji,
     '@type': constructor,
   };
@@ -1192,10 +1113,7 @@ final class InputMessageSticker extends InputMessageContent {
     }
 
     return InputMessageSticker(
-      sticker: InputFile.fromJson(tdMapFromJson(json['sticker'])),
-      thumbnail: InputThumbnail.fromJson(tdMapFromJson(json['thumbnail'])),
-      width: (json['width'] as int?) ?? 0,
-      height: (json['height'] as int?) ?? 0,
+      sticker: InputSticker.fromJson(tdMapFromJson(json['sticker'])),
       emoji: (json['emoji'] as String?) ?? '',
     );
   }
@@ -1269,7 +1187,7 @@ final class InputMessageText extends InputMessageContent {
   /// may be null if none; pass null to use default link preview options
   final LinkPreviewOptions? linkPreviewOptions;
 
-  /// [clearDraft] True, if the chat message draft must be deleted
+  /// [clearDraft] Pass true to delete message draft in the chat
   final bool clearDraft;
 
   static const String constructor = 'inputMessageText';
@@ -1347,50 +1265,14 @@ final class InputMessageVenue extends InputMessageContent {
 final class InputMessageVideo extends InputMessageContent {
   InputMessageVideo({
     this.video,
-    this.thumbnail,
-    this.cover,
-    required this.startTimestamp,
-    required this.addedStickerFileIds,
-    required this.duration,
-    required this.width,
-    required this.height,
-    required this.supportsStreaming,
     this.caption,
     required this.showCaptionAboveMedia,
     this.selfDestructType,
     required this.hasSpoiler,
   });
 
-  /// [video] Video to be sent. The video is expected to be re-encoded to MPEG4
-  /// format with H.264 codec by the sender
-  final InputFile? video;
-
-  /// [thumbnail] Video thumbnail; pass null to skip thumbnail uploading
-  final InputThumbnail? thumbnail;
-
-  /// [cover] Cover of the video; pass null to skip cover uploading; not
-  /// supported in secret chats and for self-destructing messages
-  final InputFile? cover;
-
-  /// [startTimestamp] Timestamp from which the video playing must start, in
-  /// seconds
-  final int startTimestamp;
-
-  /// [addedStickerFileIds] File identifiers of the stickers added to the video,
-  /// if applicable
-  final List<int> addedStickerFileIds;
-
-  /// [duration] Duration of the video, in seconds
-  final int duration;
-
-  /// [width] Video width
-  final int width;
-
-  /// [height] Video height
-  final int height;
-
-  /// [supportsStreaming] True, if the video is expected to be streamed
-  final bool supportsStreaming;
+  /// [video] Video to be sent
+  final InputVideo? video;
 
   /// [caption] Video caption; pass null to use an empty caption;
   /// 0-getOption("message_caption_length_max") characters
@@ -1417,14 +1299,6 @@ final class InputMessageVideo extends InputMessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'video': video?.toJson(),
-    'thumbnail': thumbnail?.toJson(),
-    'cover': cover?.toJson(),
-    'start_timestamp': startTimestamp,
-    'added_sticker_file_ids': addedStickerFileIds.map((item) => item).toList(),
-    'duration': duration,
-    'width': width,
-    'height': height,
-    'supports_streaming': supportsStreaming,
     'caption': caption?.toJson(),
     'show_caption_above_media': showCaptionAboveMedia,
     'self_destruct_type': selfDestructType?.toJson(),
@@ -1438,19 +1312,7 @@ final class InputMessageVideo extends InputMessageContent {
     }
 
     return InputMessageVideo(
-      video: InputFile.fromJson(tdMapFromJson(json['video'])),
-      thumbnail: InputThumbnail.fromJson(tdMapFromJson(json['thumbnail'])),
-      cover: InputFile.fromJson(tdMapFromJson(json['cover'])),
-      startTimestamp: (json['start_timestamp'] as int?) ?? 0,
-      addedStickerFileIds: List<int>.from(
-        tdListFromJson(
-          json['added_sticker_file_ids'],
-        ).map((item) => int.tryParse((item as dynamic)?.toString() ?? '') ?? 0),
-      ),
-      duration: (json['duration'] as int?) ?? 0,
-      width: (json['width'] as int?) ?? 0,
-      height: (json['height'] as int?) ?? 0,
-      supportsStreaming: (json['supports_streaming'] as bool?) ?? false,
+      video: InputVideo.fromJson(tdMapFromJson(json['video'])),
       caption: FormattedText.fromJson(tdMapFromJson(json['caption'])),
       showCaptionAboveMedia:
           (json['show_caption_above_media'] as bool?) ?? false,
@@ -1471,28 +1333,10 @@ final class InputMessageVideo extends InputMessageContent {
 /// A video note message
 @immutable
 final class InputMessageVideoNote extends InputMessageContent {
-  InputMessageVideoNote({
-    this.videoNote,
-    this.thumbnail,
-    required this.duration,
-    required this.length,
-    this.selfDestructType,
-  });
+  InputMessageVideoNote({this.videoNote, this.selfDestructType});
 
-  /// [videoNote] Video note to be sent. The video is expected to be encoded to
-  /// MPEG4 format with H.264 codec and have no data outside of the visible
-  /// circle
-  final InputFile? videoNote;
-
-  /// [thumbnail] Video thumbnail; may be null if empty; pass null to skip
-  /// thumbnail uploading
-  final InputThumbnail? thumbnail;
-
-  /// [duration] Duration of the video, in seconds; 0-60
-  final int duration;
-
-  /// [length] Video width and height; must be positive and not greater than 640
-  final int length;
+  /// [videoNote] Video note to be sent
+  final InputVideoNote? videoNote;
 
   /// [selfDestructType] Video note self-destruct type; may be null if none;
   /// pass null if none; private chats only
@@ -1506,9 +1350,6 @@ final class InputMessageVideoNote extends InputMessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'video_note': videoNote?.toJson(),
-    'thumbnail': thumbnail?.toJson(),
-    'duration': duration,
-    'length': length,
     'self_destruct_type': selfDestructType?.toJson(),
     '@type': constructor,
   };
@@ -1519,10 +1360,7 @@ final class InputMessageVideoNote extends InputMessageContent {
     }
 
     return InputMessageVideoNote(
-      videoNote: InputFile.fromJson(tdMapFromJson(json['video_note'])),
-      thumbnail: InputThumbnail.fromJson(tdMapFromJson(json['thumbnail'])),
-      duration: (json['duration'] as int?) ?? 0,
-      length: (json['length'] as int?) ?? 0,
+      videoNote: InputVideoNote.fromJson(tdMapFromJson(json['video_note'])),
       selfDestructType: MessageSelfDestructType.fromJson(
         tdMapFromJson(json['self_destruct_type']),
       ),
@@ -1539,27 +1377,13 @@ final class InputMessageVideoNote extends InputMessageContent {
 /// A voice note message
 @immutable
 final class InputMessageVoiceNote extends InputMessageContent {
-  InputMessageVoiceNote({
-    this.voiceNote,
-    required this.duration,
-    required this.waveform,
-    this.caption,
-    this.selfDestructType,
-  });
+  InputMessageVoiceNote({this.voiceNote, this.caption, this.selfDestructType});
 
-  /// [voiceNote] Voice note to be sent. The voice note must be encoded with the
-  /// Opus codec and stored inside an OGG container with a single audio channel,
-  /// or be in MP3 or M4A format as regular audio
-  final InputFile? voiceNote;
+  /// [voiceNote] Voice note to be sent
+  final InputVoiceNote? voiceNote;
 
-  /// [duration] Duration of the voice note, in seconds
-  final int duration;
-
-  /// [waveform] Waveform representation of the voice note in 5-bit format
-  final String waveform;
-
-  /// [caption] Voice note caption; may be null if empty; pass null to use an
-  /// empty caption; 0-getOption("message_caption_length_max") characters
+  /// [caption] Voice note caption; pass null to use an empty caption;
+  /// 0-getOption("message_caption_length_max") characters
   final FormattedText? caption;
 
   /// [selfDestructType] Voice note self-destruct type; may be null if none;
@@ -1574,8 +1398,6 @@ final class InputMessageVoiceNote extends InputMessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'voice_note': voiceNote?.toJson(),
-    'duration': duration,
-    'waveform': waveform,
     'caption': caption?.toJson(),
     'self_destruct_type': selfDestructType?.toJson(),
     '@type': constructor,
@@ -1587,9 +1409,7 @@ final class InputMessageVoiceNote extends InputMessageContent {
     }
 
     return InputMessageVoiceNote(
-      voiceNote: InputFile.fromJson(tdMapFromJson(json['voice_note'])),
-      duration: (json['duration'] as int?) ?? 0,
-      waveform: (json['waveform'] as String?) ?? '',
+      voiceNote: InputVoiceNote.fromJson(tdMapFromJson(json['voice_note'])),
       caption: FormattedText.fromJson(tdMapFromJson(json['caption'])),
       selfDestructType: MessageSelfDestructType.fromJson(
         tdMapFromJson(json['self_destruct_type']),

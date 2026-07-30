@@ -1,38 +1,29 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// A sticker to be added to a sticker set
+/// A sticker to be sent
 @immutable
 final class InputSticker extends TdObject {
   InputSticker({
     this.sticker,
-    this.format,
-    required this.emojis,
-    this.maskPosition,
-    required this.keywords,
+    this.thumbnail,
+    required this.width,
+    required this.height,
   });
 
-  /// [sticker] File with the sticker; must fit in a 512x512 square. For WEBP
-  /// stickers the file must be in WEBP or PNG format, which will be converted
-  /// to WEBP server-side. See
-  /// https://core.telegram.org/animated_stickers#technical-requirements for
-  /// technical requirements
+  /// [sticker] Sticker to be sent
   final InputFile? sticker;
 
-  /// [format] Format of the sticker
-  final StickerFormat? format;
+  /// [thumbnail] Sticker thumbnail; pass null to skip thumbnail uploading
+  final InputThumbnail? thumbnail;
 
-  /// [emojis] String with 1-20 emoji corresponding to the sticker
-  final String emojis;
+  /// [width] Sticker width
+  final int width;
 
-  /// [maskPosition] Position where the mask is placed; pass null if not
-  /// specified
-  final MaskPosition? maskPosition;
-
-  /// [keywords] List of up to 20 keywords with total length up to 64
-  /// characters, which can be used to find the sticker
-  final List<String> keywords;
+  /// [height] Sticker height
+  final int height;
 
   static const String constructor = 'inputSticker';
 
@@ -42,10 +33,9 @@ final class InputSticker extends TdObject {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'sticker': sticker?.toJson(),
-    'format': format?.toJson(),
-    'emojis': emojis,
-    'mask_position': maskPosition?.toJson(),
-    'keywords': keywords.map((item) => item).toList(),
+    'thumbnail': thumbnail?.toJson(),
+    'width': width,
+    'height': height,
     '@type': constructor,
   };
 
@@ -56,14 +46,9 @@ final class InputSticker extends TdObject {
 
     return InputSticker(
       sticker: InputFile.fromJson(tdMapFromJson(json['sticker'])),
-      format: StickerFormat.fromJson(tdMapFromJson(json['format'])),
-      emojis: (json['emojis'] as String?) ?? '',
-      maskPosition: MaskPosition.fromJson(tdMapFromJson(json['mask_position'])),
-      keywords: List<String>.from(
-        tdListFromJson(
-          json['keywords'],
-        ).map((item) => (item as dynamic)?.toString() ?? ''),
-      ),
+      thumbnail: InputThumbnail.fromJson(tdMapFromJson(json['thumbnail'])),
+      width: (json['width'] as int?) ?? 0,
+      height: (json['height'] as int?) ?? 0,
     );
   }
 

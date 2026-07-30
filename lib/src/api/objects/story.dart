@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -99,7 +100,7 @@ final class Story extends TdObject {
   /// through getStoryInteractions
   final bool canGetInteractions;
 
-  /// [hasExpiredViewers] True, if users viewed the story can't be received,
+  /// [hasExpiredViewers] True, if users who viewed the story can't be received,
   /// because the story has expired more than
   /// getOption("story_viewers_expiration_delay") seconds ago
   final bool hasExpiredViewers;

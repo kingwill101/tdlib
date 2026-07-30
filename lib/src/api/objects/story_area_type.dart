@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -176,7 +177,7 @@ final class StoryAreaTypeMessage extends StoryAreaType {
 }
 
 /// An area pointing to a suggested reaction. App needs to show a clickable
-/// reaction on the area and call setStoryReaction when the are is clicked
+/// reaction on the area and call setStoryReaction when the area is clicked
 @immutable
 final class StoryAreaTypeSuggestedReaction extends StoryAreaType {
   StoryAreaTypeSuggestedReaction({

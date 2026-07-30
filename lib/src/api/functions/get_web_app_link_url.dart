@@ -1,10 +1,11 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
 /// Returns an HTTPS URL of a Web App to open after a link of the type
 /// internalLinkTypeWebApp is clicked
-/// Returns [HttpUrl]
+/// Returns [WebAppUrl]
 @immutable
 final class GetWebAppLinkUrl extends TdFunction {
   GetWebAppLinkUrl({

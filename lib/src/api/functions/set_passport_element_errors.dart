@@ -1,8 +1,9 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// Informs the user who some of the elements in their Telegram Passport
+/// Informs the user that some of the elements in their Telegram Passport
 /// contain errors; for bots only. The user will not be able to resend the
 /// elements, until the errors are fixed
 /// Returns [Ok]

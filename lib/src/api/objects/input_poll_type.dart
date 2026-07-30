@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -58,10 +59,10 @@ final class InputPollTypeQuiz extends InputPollType {
 
   /// [explanationMedia] Media that is shown when the user chooses an incorrect
   /// answer or taps on the lamp icon; pass null if none. Must be one of the
-  /// following types: inputMessageAnimation, inputMessageAudio,
-  /// inputMessageDocument, non-live inputMessageLocation, inputMessagePhoto,
-  /// inputMessageVenue, or inputMessageVideo without caption
-  final InputMessageContent? explanationMedia;
+  /// following types: inputPollMediaAnimation, inputPollMediaAudio,
+  /// inputPollMediaDocument, inputPollMediaLocation, inputPollMediaPhoto,
+  /// inputPollMediaVenue, or inputPollMediaVideo without caption
+  final InputPollMedia? explanationMedia;
 
   static const String constructor = 'inputPollTypeQuiz';
 
@@ -88,7 +89,7 @@ final class InputPollTypeQuiz extends InputPollType {
         ).map((item) => int.tryParse((item as dynamic)?.toString() ?? '') ?? 0),
       ),
       explanation: FormattedText.fromJson(tdMapFromJson(json['explanation'])),
-      explanationMedia: InputMessageContent.fromJson(
+      explanationMedia: InputPollMedia.fromJson(
         tdMapFromJson(json['explanation_media']),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -8,11 +9,15 @@ import '../tdapi.dart';
 /// Returns [Chats]
 @immutable
 final class SearchChats extends TdFunction {
-  SearchChats({required this.query, required this.limit});
+  SearchChats({required this.query, this.typeFilter, required this.limit});
 
   /// [query] Query to search for. If the query is empty, returns up to 50
   /// recently found chats
   final String query;
+
+  /// [typeFilter] Additional filter for type of the chats to be returned; pass
+  /// null to search for chats of all types
+  final SearchChatTypeFilter? typeFilter;
 
   /// [limit] The maximum number of chats to be returned
   final int limit;
@@ -25,6 +30,7 @@ final class SearchChats extends TdFunction {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'query': query,
+    'type_filter': typeFilter?.toJson(),
     'limit': limit,
     '@type': constructor,
   };

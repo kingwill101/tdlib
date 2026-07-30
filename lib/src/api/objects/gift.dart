@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -76,18 +77,18 @@ final class Gift extends TdObject {
   /// user; may be null if not limited
   final GiftPurchaseLimits? userLimits;
 
-  /// [overallLimits] Number of times the gift can be purchased all users; may
-  /// be null if not limited
+  /// [overallLimits] Number of times the gift can be purchased by all users;
+  /// may be null if not limited
   final GiftPurchaseLimits? overallLimits;
 
   /// [background] Background of the gift
   final GiftBackground? background;
 
-  /// [firstSendDate] Point in time (Unix timestamp) when the gift was send for
+  /// [firstSendDate] Point in time (Unix timestamp) when the gift was sent for
   /// the first time; for sold out gifts only
   final int firstSendDate;
 
-  /// [lastSendDate] Point in time (Unix timestamp) when the gift was send for
+  /// [lastSendDate] Point in time (Unix timestamp) when the gift was sent for
   /// the last time; for sold out gifts only
   final int lastSendDate;
 

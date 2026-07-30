@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -24,7 +25,7 @@ final class UpgradeGift extends TdFunction {
   /// receiver in the upgraded gift
   final bool keepOriginalDetails;
 
-  /// [starCount] The Telegram Star amount required to pay for the upgrade. It
+  /// [starCount] The Telegram Star amount required to pay for the upgrade. If
   /// the gift has prepaid_upgrade_star_count
   final int starCount;
 

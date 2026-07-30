@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -9,10 +10,14 @@ import '../tdapi.dart';
 /// Returns [Chats]
 @immutable
 final class SearchPublicChats extends TdFunction {
-  SearchPublicChats({required this.query});
+  SearchPublicChats({required this.query, this.typeFilter});
 
   /// [query] Query to search for
   final String query;
+
+  /// [typeFilter] Additional filter for type of the chats to be returned; pass
+  /// null to search for chats of all types
+  final SearchChatTypeFilter? typeFilter;
 
   static const String constructor = 'searchPublicChats';
 
@@ -22,6 +27,7 @@ final class SearchPublicChats extends TdFunction {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'query': query,
+    'type_filter': typeFilter?.toJson(),
     '@type': constructor,
   };
 

@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -13,7 +14,7 @@ final class Session extends TdObject {
     required this.isUnconfirmed,
     required this.canAcceptSecretChats,
     required this.canAcceptCalls,
-    this.type,
+    this.deviceType,
     required this.apiId,
     required this.applicationName,
     required this.applicationVersion,
@@ -47,9 +48,9 @@ final class Session extends TdObject {
   /// [canAcceptCalls] True, if incoming calls can be accepted by the session
   final bool canAcceptCalls;
 
-  /// [type] Session type based on the system and application version, which can
-  /// be used to display a corresponding icon
-  final SessionType? type;
+  /// [deviceType] Session device type based on the system and application
+  /// version, which can be used to display a corresponding icon
+  final SessionDeviceType? deviceType;
 
   /// [apiId] Telegram API identifier, as provided by the application
   final int apiId;
@@ -105,7 +106,7 @@ final class Session extends TdObject {
     'is_unconfirmed': isUnconfirmed,
     'can_accept_secret_chats': canAcceptSecretChats,
     'can_accept_calls': canAcceptCalls,
-    'type': type?.toJson(),
+    'device_type': deviceType?.toJson(),
     'api_id': apiId,
     'application_name': applicationName,
     'application_version': applicationVersion,
@@ -132,7 +133,9 @@ final class Session extends TdObject {
       isUnconfirmed: (json['is_unconfirmed'] as bool?) ?? false,
       canAcceptSecretChats: (json['can_accept_secret_chats'] as bool?) ?? false,
       canAcceptCalls: (json['can_accept_calls'] as bool?) ?? false,
-      type: SessionType.fromJson(tdMapFromJson(json['type'])),
+      deviceType: SessionDeviceType.fromJson(
+        tdMapFromJson(json['device_type']),
+      ),
       apiId: (json['api_id'] as int?) ?? 0,
       applicationName: (json['application_name'] as String?) ?? '',
       applicationVersion: (json['application_version'] as String?) ?? '',

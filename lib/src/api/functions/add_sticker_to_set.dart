@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -17,7 +18,7 @@ final class AddStickerToSet extends TdFunction {
   final String name;
 
   /// [sticker] Sticker to add to the set
-  final InputSticker? sticker;
+  final NewSticker? sticker;
 
   static const String constructor = 'addStickerToSet';
 

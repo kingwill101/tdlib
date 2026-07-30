@@ -1,33 +1,34 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// Contains information about Toncoins earned by the current user
+/// Contains information about TON Grams earned by the current user
 @immutable
-final class TonRevenueStatus extends TdObject {
-  TonRevenueStatus({
+final class GramRevenueStatus extends TdObject {
+  GramRevenueStatus({
     required this.totalAmount,
     required this.balanceAmount,
     required this.availableAmount,
     required this.withdrawalEnabled,
   });
 
-  /// [totalAmount] Total Toncoin amount earned; in the smallest units of the
+  /// [totalAmount] Total Gram amount earned; in the smallest units of the
   /// cryptocurrency
   final int totalAmount;
 
-  /// [balanceAmount] The Toncoin amount that isn't withdrawn yet; in the
-  /// smallest units of the cryptocurrency
+  /// [balanceAmount] The Gram amount that isn't withdrawn yet; in the smallest
+  /// units of the cryptocurrency
   final int balanceAmount;
 
-  /// [availableAmount] The Toncoin amount that is available for withdrawal; in
-  /// the smallest units of the cryptocurrency
+  /// [availableAmount] The Gram amount that is available for withdrawal; in the
+  /// smallest units of the cryptocurrency
   final int availableAmount;
 
-  /// [withdrawalEnabled] True, if Toncoins can be withdrawn
+  /// [withdrawalEnabled] True, if Grams can be withdrawn
   final bool withdrawalEnabled;
 
-  static const String constructor = 'tonRevenueStatus';
+  static const String constructor = 'gramRevenueStatus';
 
   @override
   String getConstructor() => constructor;
@@ -41,12 +42,12 @@ final class TonRevenueStatus extends TdObject {
     '@type': constructor,
   };
 
-  static TonRevenueStatus? fromJson(Map<String, dynamic>? json) {
+  static GramRevenueStatus? fromJson(Map<String, dynamic>? json) {
     if (json == null) {
       return null;
     }
 
-    return TonRevenueStatus(
+    return GramRevenueStatus(
       totalAmount:
           int.tryParse((json['total_amount'] as dynamic)?.toString() ?? '') ??
           0,

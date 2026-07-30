@@ -1,11 +1,12 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
 /// Returns an HTTPS URL of a Web App to open from the side menu, a
 /// keyboardButtonTypeWebApp button, or an inlineQueryResultsButtonTypeWebApp
 /// button
-/// Returns [HttpUrl]
+/// Returns [WebAppUrl]
 @immutable
 final class GetWebAppUrl extends TdFunction {
   GetWebAppUrl({required this.botUserId, required this.url, this.parameters});

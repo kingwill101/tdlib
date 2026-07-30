@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -51,6 +52,7 @@ sealed class Update extends TdObject {
   /// [UpdateChatHasScheduledMessages]
   /// [UpdateChatIsMarkedAsUnread]
   /// [UpdateChatIsTranslatable]
+  /// [UpdateChatJoinResult]
   /// [UpdateChatLastMessage]
   /// [UpdateChatMember]
   /// [UpdateChatMessageAutoDeleteTime]
@@ -73,6 +75,7 @@ sealed class Update extends TdObject {
   /// [UpdateChatUnreadReactionCount]
   /// [UpdateChatVideoChat]
   /// [UpdateChatViewAsTopics]
+  /// [UpdateCommunity]
   /// [UpdateConnectionState]
   /// [UpdateContactCloseBirthdays]
   /// [UpdateDefaultBackground]
@@ -94,6 +97,7 @@ sealed class Update extends TdObject {
   /// [UpdateForumTopicInfo]
   /// [UpdateFreezeState]
   /// [UpdateGiftAuctionState]
+  /// [UpdateGramRevenueStatus]
   /// [UpdateGroupCall]
   /// [UpdateGroupCallMessageLevels]
   /// [UpdateGroupCallMessageSendFailed]
@@ -143,10 +147,10 @@ sealed class Update extends TdObject {
   /// [UpdateNotification]
   /// [UpdateNotificationGroup]
   /// [UpdateOption]
+  /// [UpdateOwnedGramCount]
   /// [UpdateOwnedStarCount]
-  /// [UpdateOwnedTonCount]
   /// [UpdatePaidMediaPurchased]
-  /// [UpdatePendingTextMessage]
+  /// [UpdatePendingMessage]
   /// [UpdatePoll]
   /// [UpdatePollAnswer]
   /// [UpdateProfileAccentColors]
@@ -180,7 +184,6 @@ sealed class Update extends TdObject {
   /// [UpdateSupergroupFullInfo]
   /// [UpdateTermsOfService]
   /// [UpdateTextCompositionStyles]
-  /// [UpdateTonRevenueStatus]
   /// [UpdateTopicMessageCount]
   /// [UpdateTrendingStickerSets]
   /// [UpdateTrustedMiniAppBots]
@@ -191,8 +194,10 @@ sealed class Update extends TdObject {
   /// [UpdateUserFullInfo]
   /// [UpdateUserPrivacySettingRules]
   /// [UpdateUserStatus]
+  /// [UpdateUserSubscription]
   /// [UpdateVideoPublished]
   /// [UpdateWebAppMessageSent]
+  /// [UpdateWebBrowserSettings]
   static Update? fromJson(Map<String, dynamic>? json) {
     if (json == null) {
       return null;
@@ -313,6 +318,9 @@ sealed class Update extends TdObject {
       case UpdateChatIsTranslatable.constructor:
         return UpdateChatIsTranslatable.fromJson(json);
 
+      case UpdateChatJoinResult.constructor:
+        return UpdateChatJoinResult.fromJson(json);
+
       case UpdateChatLastMessage.constructor:
         return UpdateChatLastMessage.fromJson(json);
 
@@ -379,6 +387,9 @@ sealed class Update extends TdObject {
       case UpdateChatViewAsTopics.constructor:
         return UpdateChatViewAsTopics.fromJson(json);
 
+      case UpdateCommunity.constructor:
+        return UpdateCommunity.fromJson(json);
+
       case UpdateConnectionState.constructor:
         return UpdateConnectionState.fromJson(json);
 
@@ -441,6 +452,9 @@ sealed class Update extends TdObject {
 
       case UpdateGiftAuctionState.constructor:
         return UpdateGiftAuctionState.fromJson(json);
+
+      case UpdateGramRevenueStatus.constructor:
+        return UpdateGramRevenueStatus.fromJson(json);
 
       case UpdateGroupCall.constructor:
         return UpdateGroupCall.fromJson(json);
@@ -589,17 +603,17 @@ sealed class Update extends TdObject {
       case UpdateOption.constructor:
         return UpdateOption.fromJson(json);
 
+      case UpdateOwnedGramCount.constructor:
+        return UpdateOwnedGramCount.fromJson(json);
+
       case UpdateOwnedStarCount.constructor:
         return UpdateOwnedStarCount.fromJson(json);
-
-      case UpdateOwnedTonCount.constructor:
-        return UpdateOwnedTonCount.fromJson(json);
 
       case UpdatePaidMediaPurchased.constructor:
         return UpdatePaidMediaPurchased.fromJson(json);
 
-      case UpdatePendingTextMessage.constructor:
-        return UpdatePendingTextMessage.fromJson(json);
+      case UpdatePendingMessage.constructor:
+        return UpdatePendingMessage.fromJson(json);
 
       case UpdatePoll.constructor:
         return UpdatePoll.fromJson(json);
@@ -700,9 +714,6 @@ sealed class Update extends TdObject {
       case UpdateTextCompositionStyles.constructor:
         return UpdateTextCompositionStyles.fromJson(json);
 
-      case UpdateTonRevenueStatus.constructor:
-        return UpdateTonRevenueStatus.fromJson(json);
-
       case UpdateTopicMessageCount.constructor:
         return UpdateTopicMessageCount.fromJson(json);
 
@@ -733,11 +744,17 @@ sealed class Update extends TdObject {
       case UpdateUserStatus.constructor:
         return UpdateUserStatus.fromJson(json);
 
+      case UpdateUserSubscription.constructor:
+        return UpdateUserSubscription.fromJson(json);
+
       case UpdateVideoPublished.constructor:
         return UpdateVideoPublished.fromJson(json);
 
       case UpdateWebAppMessageSent.constructor:
         return UpdateWebAppMessageSent.fromJson(json);
+
+      case UpdateWebBrowserSettings.constructor:
+        return UpdateWebBrowserSettings.fromJson(json);
 
       default:
         return null;
@@ -851,7 +868,7 @@ final class UpdateActiveEmojiReactions extends Update {
   int get hashCode => overriddenHashCode;
 }
 
-/// The list of auctions in which participate the current user has changed
+/// The list of auctions in which the current user participates has changed
 @immutable
 final class UpdateActiveGiftAuctions extends Update {
   UpdateActiveGiftAuctions({required this.states});
@@ -978,7 +995,7 @@ final class UpdateActiveNotifications extends Update {
   int get hashCode => overriddenHashCode;
 }
 
-/// The parameters for age verification of the current user's account has
+/// The parameters for age verification of the current user's account have
 /// changed
 @immutable
 final class UpdateAgeVerificationParameters extends Update {
@@ -1074,7 +1091,7 @@ final class UpdateAnimatedEmojiMessageClicked extends Update {
 }
 
 /// The parameters of animation search through
-/// getOption("animation_search_bot_username") bot has changed
+/// getOption("animation_search_bot_username") bot have changed
 @immutable
 final class UpdateAnimationSearchParameters extends Update {
   UpdateAnimationSearchParameters({
@@ -2520,6 +2537,60 @@ final class UpdateChatIsTranslatable extends Update {
   int get hashCode => overriddenHashCode;
 }
 
+/// A join request from the user was completed
+@immutable
+final class UpdateChatJoinResult extends Update {
+  UpdateChatJoinResult({
+    required this.queryId,
+    required this.chatId,
+    this.result,
+  });
+
+  /// [queryId] Identifier of the join request query as received in
+  /// chatJoinResultGuardBotApprovalRequired. If the corresponding Web App is
+  /// still open, then it must be closed
+  final int queryId;
+
+  /// [chatId] Identifier of the joined chat, or 0 if the request wasn't
+  /// approved
+  final int chatId;
+
+  /// [result] Result of the join
+  final ChatJoinRequestResult? result;
+
+  static const String constructor = 'updateChatJoinResult';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'query_id': queryId.toString(),
+    'chat_id': chatId,
+    'result': result?.toJson(),
+    '@type': constructor,
+  };
+
+  static UpdateChatJoinResult? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return UpdateChatJoinResult(
+      queryId:
+          int.tryParse((json['query_id'] as dynamic)?.toString() ?? '') ?? 0,
+      chatId: (json['chat_id'] as int?) ?? 0,
+      result: ChatJoinRequestResult.fromJson(tdMapFromJson(json['result'])),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// The last message of a chat was changed
 @immutable
 final class UpdateChatLastMessage extends Update {
@@ -3546,6 +3617,43 @@ final class UpdateChatViewAsTopics extends Update {
   int get hashCode => overriddenHashCode;
 }
 
+/// Some data of a community has changed. This update is guaranteed to come
+/// before the community identifier is returned to the application
+@immutable
+final class UpdateCommunity extends Update {
+  UpdateCommunity({this.community});
+
+  /// [community] New data about the community
+  final Community? community;
+
+  static const String constructor = 'updateCommunity';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'community': community?.toJson(),
+    '@type': constructor,
+  };
+
+  static UpdateCommunity? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return UpdateCommunity(
+      community: Community.fromJson(tdMapFromJson(json['community'])),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// The connection state has changed. This update must be used only to show a
 /// human-readable description of the connection state
 @immutable
@@ -4510,6 +4618,44 @@ final class UpdateGiftAuctionState extends Update {
 
     return UpdateGiftAuctionState(
       state: GiftAuctionState.fromJson(tdMapFromJson(json['state'])),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// The TON Gram revenue earned by the current user has changed. If Gram
+/// transaction screen of the chat is opened, then getTonTransactions may be
+/// called to fetch new transactions
+@immutable
+final class UpdateGramRevenueStatus extends Update {
+  UpdateGramRevenueStatus({this.status});
+
+  /// [status] New Gram revenue status
+  final GramRevenueStatus? status;
+
+  static const String constructor = 'updateGramRevenueStatus';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'status': status?.toJson(),
+    '@type': constructor,
+  };
+
+  static UpdateGramRevenueStatus? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return UpdateGramRevenueStatus(
+      status: GramRevenueStatus.fromJson(tdMapFromJson(json['status'])),
     );
   }
 
@@ -6214,6 +6360,7 @@ final class UpdateNewChatJoinRequest extends Update {
     this.request,
     required this.userChatId,
     this.inviteLink,
+    required this.queryId,
   });
 
   /// [chatId] Chat identifier
@@ -6229,6 +6376,10 @@ final class UpdateNewChatJoinRequest extends Update {
   /// null
   final ChatInviteLink? inviteLink;
 
+  /// [queryId] Identifier of the join request query, which can be used in
+  /// answerChatJoinRequestQuery; 0 if none
+  final int queryId;
+
   static const String constructor = 'updateNewChatJoinRequest';
 
   @override
@@ -6240,6 +6391,7 @@ final class UpdateNewChatJoinRequest extends Update {
     'request': request?.toJson(),
     'user_chat_id': userChatId,
     'invite_link': inviteLink?.toJson(),
+    'query_id': queryId.toString(),
     '@type': constructor,
   };
 
@@ -6253,6 +6405,8 @@ final class UpdateNewChatJoinRequest extends Update {
       request: ChatJoinRequest.fromJson(tdMapFromJson(json['request'])),
       userChatId: (json['user_chat_id'] as int?) ?? 0,
       inviteLink: ChatInviteLink.fromJson(tdMapFromJson(json['invite_link'])),
+      queryId:
+          int.tryParse((json['query_id'] as dynamic)?.toString() ?? '') ?? 0,
     );
   }
 
@@ -7101,6 +7255,41 @@ final class UpdateOption extends Update {
   int get hashCode => overriddenHashCode;
 }
 
+/// The number of TON Grams owned by the current user has changed
+@immutable
+final class UpdateOwnedGramCount extends Update {
+  UpdateOwnedGramCount({required this.gramAmount});
+
+  /// [gramAmount] The new amount of owned Grams; in the smallest units of the
+  /// cryptocurrency
+  final int gramAmount;
+
+  static const String constructor = 'updateOwnedGramCount';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'gram_amount': gramAmount,
+    '@type': constructor,
+  };
+
+  static UpdateOwnedGramCount? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return UpdateOwnedGramCount(gramAmount: (json['gram_amount'] as int?) ?? 0);
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// The number of Telegram Stars owned by the current user has changed
 @immutable
 final class UpdateOwnedStarCount extends Update {
@@ -7128,41 +7317,6 @@ final class UpdateOwnedStarCount extends Update {
     return UpdateOwnedStarCount(
       starAmount: StarAmount.fromJson(tdMapFromJson(json['star_amount'])),
     );
-  }
-
-  @override
-  bool operator ==(Object other) => overriddenEquality(other);
-
-  @override
-  int get hashCode => overriddenHashCode;
-}
-
-/// The number of Toncoins owned by the current user has changed
-@immutable
-final class UpdateOwnedTonCount extends Update {
-  UpdateOwnedTonCount({required this.tonAmount});
-
-  /// [tonAmount] The new amount of owned Toncoins; in the smallest units of the
-  /// cryptocurrency
-  final int tonAmount;
-
-  static const String constructor = 'updateOwnedTonCount';
-
-  @override
-  String getConstructor() => constructor;
-
-  @override
-  Map<String, dynamic> toJson() => <String, dynamic>{
-    'ton_amount': tonAmount,
-    '@type': constructor,
-  };
-
-  static UpdateOwnedTonCount? fromJson(Map<String, dynamic>? json) {
-    if (json == null) {
-      return null;
-    }
-
-    return UpdateOwnedTonCount(tonAmount: (json['ton_amount'] as int?) ?? 0);
   }
 
   @override
@@ -7213,18 +7367,18 @@ final class UpdatePaidMediaPurchased extends Update {
   int get hashCode => overriddenHashCode;
 }
 
-/// A new pending text message was received in a chat with a bot. The message
-/// must be shown in the chat for at most
+/// A new pending text or rich message was received in a chat with a bot. The
+/// message must be shown in the chat for at most
 /// getOption("pending_text_message_period") seconds, replace any other
 /// pending message with the same draft_id, and be deleted whenever any
 /// incoming message from the bot in the message thread is received
 @immutable
-final class UpdatePendingTextMessage extends Update {
-  UpdatePendingTextMessage({
+final class UpdatePendingMessage extends Update {
+  UpdatePendingMessage({
     required this.chatId,
     required this.forumTopicId,
     required this.draftId,
-    this.text,
+    this.content,
   });
 
   /// [chatId] Chat identifier
@@ -7237,10 +7391,11 @@ final class UpdatePendingTextMessage extends Update {
   /// [draftId] Unique identifier of the message draft within the message thread
   final int draftId;
 
-  /// [text] Text of the pending message
-  final FormattedText? text;
+  /// [content] Content of the message; always of the type messageText or
+  /// messageRichMessage
+  final MessageContent? content;
 
-  static const String constructor = 'updatePendingTextMessage';
+  static const String constructor = 'updatePendingMessage';
 
   @override
   String getConstructor() => constructor;
@@ -7250,21 +7405,21 @@ final class UpdatePendingTextMessage extends Update {
     'chat_id': chatId,
     'forum_topic_id': forumTopicId,
     'draft_id': draftId.toString(),
-    'text': text?.toJson(),
+    'content': content?.toJson(),
     '@type': constructor,
   };
 
-  static UpdatePendingTextMessage? fromJson(Map<String, dynamic>? json) {
+  static UpdatePendingMessage? fromJson(Map<String, dynamic>? json) {
     if (json == null) {
       return null;
     }
 
-    return UpdatePendingTextMessage(
+    return UpdatePendingMessage(
       chatId: (json['chat_id'] as int?) ?? 0,
       forumTopicId: (json['forum_topic_id'] as int?) ?? 0,
       draftId:
           int.tryParse((json['draft_id'] as dynamic)?.toString() ?? '') ?? 0,
-      text: FormattedText.fromJson(tdMapFromJson(json['text'])),
+      content: MessageContent.fromJson(tdMapFromJson(json['content'])),
     );
   }
 
@@ -8007,7 +8162,7 @@ final class UpdateServiceNotification extends Update {
 }
 
 /// The parameters of speech recognition without Telegram Premium subscription
-/// has changed
+/// have changed
 @immutable
 final class UpdateSpeechRecognitionTrial extends Update {
   UpdateSpeechRecognitionTrial({
@@ -8068,7 +8223,7 @@ final class UpdateSpeechRecognitionTrial extends Update {
 
 /// Download or upload file speed for the user was limited, but it can be
 /// restored by subscription to Telegram Premium. The notification can be
-/// postponed until a being downloaded or uploaded file is visible to the
+/// postponed until a file being downloaded or uploaded is visible to the
 /// user. Use getOption("premium_download_speedup") or
 /// getOption("premium_upload_speedup") to get expected speedup after
 /// subscription to Telegram Premium
@@ -8697,44 +8852,6 @@ final class UpdateTextCompositionStyles extends Update {
   int get hashCode => overriddenHashCode;
 }
 
-/// The Toncoin revenue earned by the current user has changed. If Toncoin
-/// transaction screen of the chat is opened, then getTonTransactions may be
-/// called to fetch new transactions
-@immutable
-final class UpdateTonRevenueStatus extends Update {
-  UpdateTonRevenueStatus({this.status});
-
-  /// [status] New Toncoin revenue status
-  final TonRevenueStatus? status;
-
-  static const String constructor = 'updateTonRevenueStatus';
-
-  @override
-  String getConstructor() => constructor;
-
-  @override
-  Map<String, dynamic> toJson() => <String, dynamic>{
-    'status': status?.toJson(),
-    '@type': constructor,
-  };
-
-  static UpdateTonRevenueStatus? fromJson(Map<String, dynamic>? json) {
-    if (json == null) {
-      return null;
-    }
-
-    return UpdateTonRevenueStatus(
-      status: TonRevenueStatus.fromJson(tdMapFromJson(json['status'])),
-    );
-  }
-
-  @override
-  bool operator ==(Object other) => overriddenEquality(other);
-
-  @override
-  int get hashCode => overriddenHashCode;
-}
-
 /// Number of messages in a topic has changed; for Saved Messages and channel
 /// direct messages chat topics only
 @immutable
@@ -8876,10 +8993,16 @@ final class UpdateTrustedMiniAppBots extends Update {
 /// The first unconfirmed session has changed
 @immutable
 final class UpdateUnconfirmedSession extends Update {
-  UpdateUnconfirmedSession({this.session});
+  UpdateUnconfirmedSession({
+    this.session,
+    required this.unconfirmedSessionCount,
+  });
 
   /// [session] The unconfirmed session; may be null if none
   final UnconfirmedSession? session;
+
+  /// [unconfirmedSessionCount] The total number of unconfirmed sessions
+  final int unconfirmedSessionCount;
 
   static const String constructor = 'updateUnconfirmedSession';
 
@@ -8889,6 +9012,7 @@ final class UpdateUnconfirmedSession extends Update {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'session': session?.toJson(),
+    'unconfirmed_session_count': unconfirmedSessionCount,
     '@type': constructor,
   };
 
@@ -8899,6 +9023,7 @@ final class UpdateUnconfirmedSession extends Update {
 
     return UpdateUnconfirmedSession(
       session: UnconfirmedSession.fromJson(tdMapFromJson(json['session'])),
+      unconfirmedSessionCount: (json['unconfirmed_session_count'] as int?) ?? 0,
     );
   }
 
@@ -9191,6 +9316,68 @@ final class UpdateUserStatus extends Update {
   int get hashCode => overriddenHashCode;
 }
 
+/// Subscription of a user to the bot was changed; for bots only
+@immutable
+final class UpdateUserSubscription extends Update {
+  UpdateUserSubscription({
+    required this.userId,
+    required this.payload,
+    required this.isCanceled,
+    required this.isRestored,
+    required this.isPaymentFailed,
+  });
+
+  /// [userId] Identifier of the user
+  final int userId;
+
+  /// [payload] Bot-specified subscription invoice payload
+  final String payload;
+
+  /// [isCanceled] True, if the subscription was canceled
+  final bool isCanceled;
+
+  /// [isRestored] True, if the subscription was restored
+  final bool isRestored;
+
+  /// [isPaymentFailed] True, if the payment for the subscription has failed
+  final bool isPaymentFailed;
+
+  static const String constructor = 'updateUserSubscription';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'user_id': userId,
+    'payload': payload,
+    'is_canceled': isCanceled,
+    'is_restored': isRestored,
+    'is_payment_failed': isPaymentFailed,
+    '@type': constructor,
+  };
+
+  static UpdateUserSubscription? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return UpdateUserSubscription(
+      userId: (json['user_id'] as int?) ?? 0,
+      payload: (json['payload'] as String?) ?? '',
+      isCanceled: (json['is_canceled'] as bool?) ?? false,
+      isRestored: (json['is_restored'] as bool?) ?? false,
+      isPaymentFailed: (json['is_payment_failed'] as bool?) ?? false,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// An automatically scheduled message with video has been successfully sent
 /// after conversion
 @immutable
@@ -9263,6 +9450,42 @@ final class UpdateWebAppMessageSent extends Update {
             (json['web_app_launch_id'] as dynamic)?.toString() ?? '',
           ) ??
           0,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// Web browser settings have been updated
+@immutable
+final class UpdateWebBrowserSettings extends Update {
+  UpdateWebBrowserSettings({this.settings});
+
+  /// [settings] New settings
+  final WebBrowserSettings? settings;
+
+  static const String constructor = 'updateWebBrowserSettings';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'settings': settings?.toJson(),
+    '@type': constructor,
+  };
+
+  static UpdateWebBrowserSettings? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return UpdateWebBrowserSettings(
+      settings: WebBrowserSettings.fromJson(tdMapFromJson(json['settings'])),
     );
   }
 

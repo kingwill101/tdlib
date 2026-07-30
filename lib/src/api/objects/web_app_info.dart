@@ -1,17 +1,18 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
 /// Contains information about a Web App
 @immutable
 final class WebAppInfo extends TdObject {
-  WebAppInfo({required this.launchId, required this.url});
+  WebAppInfo({required this.launchId, this.url});
 
   /// [launchId] Unique identifier for the Web App launch
   final int launchId;
 
-  /// [url] A Web App URL to open in a web view
-  final String url;
+  /// [url] The Web App URL to open in a web view
+  final WebAppUrl? url;
 
   static const String constructor = 'webAppInfo';
 
@@ -21,7 +22,7 @@ final class WebAppInfo extends TdObject {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'launch_id': launchId.toString(),
-    'url': url,
+    'url': url?.toJson(),
     '@type': constructor,
   };
 
@@ -33,7 +34,7 @@ final class WebAppInfo extends TdObject {
     return WebAppInfo(
       launchId:
           int.tryParse((json['launch_id'] as dynamic)?.toString() ?? '') ?? 0,
-      url: (json['url'] as String?) ?? '',
+      url: WebAppUrl.fromJson(tdMapFromJson(json['url'])),
     );
   }
 

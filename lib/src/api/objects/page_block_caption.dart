@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -10,7 +11,7 @@ final class PageBlockCaption extends TdObject {
   /// [text] Content of the caption
   final RichText? text;
 
-  /// [credit] Block credit (like HTML tag <cite>)
+  /// [credit] Block credit (like HTML tag <cite>); may be null if none
   final RichText? credit;
 
   static const String constructor = 'pageBlockCaption';

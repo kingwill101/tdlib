@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -100,7 +101,8 @@ final class MessageProperties extends TdObject {
   final bool canBePinned;
 
   /// [canBeReplied] True, if the message can be replied in the same chat and
-  /// forum topic using inputMessageReplyToMessage
+  /// forum topic using inputMessageReplyToMessage. Ephemeral messages can be
+  /// replied only by other ephemeral messages
   final bool canBeReplied;
 
   /// [canBeRepliedInAnotherChat] True, if the message can be replied in another

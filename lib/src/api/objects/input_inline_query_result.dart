@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -132,9 +133,9 @@ final class InputInlineQueryResultAnimation extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessageAnimation,
-  /// inputMessageInvoice, inputMessageLocation, inputMessageVenue or
-  /// inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessageAnimation, inputMessageInvoice, inputMessageLiveLocation,
+  /// inputMessageLocation, inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultAnimation';
@@ -228,8 +229,9 @@ final class InputInlineQueryResultArticle extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessageInvoice,
-  /// inputMessageLocation, inputMessageVenue or inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessageInvoice, inputMessageLiveLocation, inputMessageLocation,
+  /// inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultArticle';
@@ -311,9 +313,9 @@ final class InputInlineQueryResultAudio extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessageAudio,
-  /// inputMessageInvoice, inputMessageLocation, inputMessageVenue or
-  /// inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessageAudio, inputMessageInvoice, inputMessageLiveLocation,
+  /// inputMessageLocation, inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultAudio';
@@ -391,8 +393,9 @@ final class InputInlineQueryResultContact extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessageInvoice,
-  /// inputMessageLocation, inputMessageVenue or inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessageInvoice, inputMessageLiveLocation, inputMessageLocation,
+  /// inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultContact';
@@ -483,9 +486,9 @@ final class InputInlineQueryResultDocument extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessageDocument,
-  /// inputMessageInvoice, inputMessageLocation, inputMessageVenue or
-  /// inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessageDocument, inputMessageInvoice, inputMessageLiveLocation,
+  /// inputMessageLocation, inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultDocument';
@@ -629,8 +632,9 @@ final class InputInlineQueryResultLocation extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessageInvoice,
-  /// inputMessageLocation, inputMessageVenue or inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessageInvoice, inputMessageLiveLocation, inputMessageLocation,
+  /// inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultLocation';
@@ -720,9 +724,9 @@ final class InputInlineQueryResultPhoto extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessagePhoto,
-  /// inputMessageInvoice, inputMessageLocation, inputMessageVenue or
-  /// inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessagePhoto, inputMessageInvoice, inputMessageLiveLocation,
+  /// inputMessageLocation, inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultPhoto';
@@ -805,9 +809,9 @@ final class InputInlineQueryResultSticker extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessageSticker,
-  /// inputMessageInvoice, inputMessageLocation, inputMessageVenue or
-  /// inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessageSticker, inputMessageInvoice, inputMessageLiveLocation,
+  /// inputMessageLocation, inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultSticker';
@@ -885,8 +889,9 @@ final class InputInlineQueryResultVenue extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessageInvoice,
-  /// inputMessageLocation, inputMessageVenue or inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessageInvoice, inputMessageLiveLocation, inputMessageLocation,
+  /// inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultVenue';
@@ -982,9 +987,9 @@ final class InputInlineQueryResultVideo extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessageVideo,
-  /// inputMessageInvoice, inputMessageLocation, inputMessageVenue or
-  /// inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessageVideo, inputMessageInvoice, inputMessageLiveLocation,
+  /// inputMessageLocation, inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultVideo';
@@ -1067,9 +1072,9 @@ final class InputInlineQueryResultVoiceNote extends InputInlineQueryResult {
   final ReplyMarkup? replyMarkup;
 
   /// [inputMessageContent] The content of the message to be sent. Must be one
-  /// of the following types: inputMessageText, inputMessageVoiceNote,
-  /// inputMessageInvoice, inputMessageLocation, inputMessageVenue or
-  /// inputMessageContact
+  /// of the following types: inputMessageText, inputMessageRichMessage,
+  /// inputMessageVoiceNote, inputMessageInvoice, inputMessageLiveLocation,
+  /// inputMessageLocation, inputMessageVenue or inputMessageContact
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'inputInlineQueryResultVoiceNote';

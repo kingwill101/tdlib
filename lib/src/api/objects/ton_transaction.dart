@@ -1,13 +1,14 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
-/// Represents a transaction changing the amount of owned Toncoins
+/// Represents a transaction changing the amount of owned TON Grams
 @immutable
 final class TonTransaction extends TdObject {
   TonTransaction({
     required this.id,
-    required this.tonAmount,
+    required this.gramAmount,
     required this.isRefund,
     required this.date,
     this.type,
@@ -16,9 +17,9 @@ final class TonTransaction extends TdObject {
   /// [id] Unique identifier of the transaction
   final String id;
 
-  /// [tonAmount] The amount of added owned Toncoins; negative for outgoing
-  /// transactions
-  final int tonAmount;
+  /// [gramAmount] The amount of added owned Grams, in the smallest units of the
+  /// cryptocurrency; negative for outgoing transactions
+  final int gramAmount;
 
   /// [isRefund] True, if the transaction is a refund of a previous transaction
   final bool isRefund;
@@ -37,7 +38,7 @@ final class TonTransaction extends TdObject {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
-    'ton_amount': tonAmount,
+    'gram_amount': gramAmount,
     'is_refund': isRefund,
     'date': date,
     'type': type?.toJson(),
@@ -51,7 +52,7 @@ final class TonTransaction extends TdObject {
 
     return TonTransaction(
       id: (json['id'] as String?) ?? '',
-      tonAmount: (json['ton_amount'] as int?) ?? 0,
+      gramAmount: (json['gram_amount'] as int?) ?? 0,
       isRefund: (json['is_refund'] as bool?) ?? false,
       date: (json['date'] as int?) ?? 0,
       type: TonTransactionType.fromJson(tdMapFromJson(json['type'])),

@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -11,6 +12,8 @@ final class ToggleSupergroupJoinByRequest extends TdFunction {
   ToggleSupergroupJoinByRequest({
     required this.supergroupId,
     required this.joinByRequest,
+    required this.guardBotUserId,
+    required this.applyToInviteLinks,
   });
 
   /// [supergroupId] Identifier of the supergroup that isn't a broadcast group
@@ -19,6 +22,16 @@ final class ToggleSupergroupJoinByRequest extends TdFunction {
 
   /// [joinByRequest] New value of join_by_request
   final bool joinByRequest;
+
+  /// [guardBotUserId] Identifier of the bot which will be the guard bot in the
+  /// group; pass 0 if none; ignored if join_by_request == false. The bot must
+  /// have administrator privileges and can_invite_users right in the supergroup
+  /// chat, and must have userTypeBot.is_guard == true
+  final int guardBotUserId;
+
+  /// [applyToInviteLinks] Pass true to apply the change to the existing invite
+  /// links, including primary links
+  final bool applyToInviteLinks;
 
   static const String constructor = 'toggleSupergroupJoinByRequest';
 
@@ -29,6 +42,8 @@ final class ToggleSupergroupJoinByRequest extends TdFunction {
   Map<String, dynamic> toJson() => <String, dynamic>{
     'supergroup_id': supergroupId,
     'join_by_request': joinByRequest,
+    'guard_bot_user_id': guardBotUserId,
+    'apply_to_invite_links': applyToInviteLinks,
     '@type': constructor,
   };
 

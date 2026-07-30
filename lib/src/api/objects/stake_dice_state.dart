@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -7,8 +8,8 @@ import '../tdapi.dart';
 final class StakeDiceState extends TdObject {
   StakeDiceState({
     required this.stateHash,
-    required this.stakeToncoinAmount,
-    required this.suggestedStakeToncoinAmounts,
+    required this.stakeGramAmount,
+    required this.suggestedStakeGramAmounts,
     required this.currentStreak,
     required this.prizePerMille,
     required this.streakPrizePerMille,
@@ -18,25 +19,25 @@ final class StakeDiceState extends TdObject {
   /// empty if the stake dice can't be sent by the current user
   final String stateHash;
 
-  /// [stakeToncoinAmount] The Toncoin amount that was staked in the previous
-  /// roll; in the smallest units of the currency
-  final int stakeToncoinAmount;
+  /// [stakeGramAmount] The amount of TON Grams staked in the previous roll; in
+  /// the smallest units of the currency
+  final int stakeGramAmount;
 
-  /// [suggestedStakeToncoinAmounts] The amounts of Toncoins that are suggested
-  /// to be staked; in the smallest units of the currency
-  final List<int> suggestedStakeToncoinAmounts;
+  /// [suggestedStakeGramAmounts] The amounts of Grams that are suggested to be
+  /// staked; in the smallest units of the currency
+  final List<int> suggestedStakeGramAmounts;
 
   /// [currentStreak] The number of rolled sixes towards the streak; 0-2
   final int currentStreak;
 
-  /// [prizePerMille] The number of Toncoins received by the user for each 1000
-  /// Toncoins staked if the dice outcome is 1-6 correspondingly; may be empty
-  /// if the stake dice can't be sent by the current user
+  /// [prizePerMille] The number of Grams received by the user for each 1000
+  /// Grams staked if the dice outcome is 1-6 correspondingly; may be empty if
+  /// the stake dice can't be sent by the current user
   final List<int> prizePerMille;
 
-  /// [streakPrizePerMille] The number of Toncoins received by the user for each
-  /// 1000 Toncoins staked if the dice outcome is 6 three times in a row with
-  /// the same stake
+  /// [streakPrizePerMille] The number of Grams received by the user for each
+  /// 1000 Grams staked if the dice outcome is 6 three times in a row with the
+  /// same stake
   final int streakPrizePerMille;
 
   static const String constructor = 'stakeDiceState';
@@ -47,8 +48,8 @@ final class StakeDiceState extends TdObject {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'state_hash': stateHash,
-    'stake_toncoin_amount': stakeToncoinAmount,
-    'suggested_stake_toncoin_amounts': suggestedStakeToncoinAmounts
+    'stake_gram_amount': stakeGramAmount,
+    'suggested_stake_gram_amounts': suggestedStakeGramAmounts
         .map((item) => item)
         .toList(),
     'current_streak': currentStreak,
@@ -64,10 +65,10 @@ final class StakeDiceState extends TdObject {
 
     return StakeDiceState(
       stateHash: (json['state_hash'] as String?) ?? '',
-      stakeToncoinAmount: (json['stake_toncoin_amount'] as int?) ?? 0,
-      suggestedStakeToncoinAmounts: List<int>.from(
+      stakeGramAmount: (json['stake_gram_amount'] as int?) ?? 0,
+      suggestedStakeGramAmounts: List<int>.from(
         tdListFromJson(
-          json['suggested_stake_toncoin_amounts'],
+          json['suggested_stake_gram_amounts'],
         ).map((item) => int.tryParse((item as dynamic)?.toString() ?? '') ?? 0),
       ),
       currentStreak: (json['current_streak'] as int?) ?? 0,

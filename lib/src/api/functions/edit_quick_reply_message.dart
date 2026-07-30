@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -27,7 +28,7 @@ final class EditQuickReplyMessage extends TdFunction {
   /// [inputMessageContent] New content of the message. Must be one of the
   /// following types: inputMessageAnimation, inputMessageAudio,
   /// inputMessageChecklist, inputMessageDocument, inputMessagePhoto,
-  /// inputMessageText, or inputMessageVideo
+  /// inputMessageRichMessage, inputMessageText, or inputMessageVideo
   final InputMessageContent? inputMessageContent;
 
   static const String constructor = 'editQuickReplyMessage';

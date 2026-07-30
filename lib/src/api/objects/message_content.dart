@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
@@ -20,6 +21,7 @@ sealed class MessageContent extends TdObject {
   /// [MessageBotWriteAccessAllowed]
   /// [MessageCall]
   /// [MessageChatAddMembers]
+  /// [MessageChatAddedToCommunity]
   /// [MessageChatBoost]
   /// [MessageChatChangePhoto]
   /// [MessageChatChangeTitle]
@@ -31,6 +33,7 @@ sealed class MessageContent extends TdObject {
   /// [MessageChatJoinByRequest]
   /// [MessageChatOwnerChanged]
   /// [MessageChatOwnerLeft]
+  /// [MessageChatRemovedFromCommunity]
   /// [MessageChatSetBackground]
   /// [MessageChatSetMessageAutoDeleteTime]
   /// [MessageChatSetTheme]
@@ -68,6 +71,7 @@ sealed class MessageContent extends TdObject {
   /// [MessageGroupCall]
   /// [MessageInviteVideoChatParticipants]
   /// [MessageInvoice]
+  /// [MessageLiveLocation]
   /// [MessageLocation]
   /// [MessageManagedBotCreated]
   /// [MessagePaidMedia]
@@ -86,6 +90,7 @@ sealed class MessageContent extends TdObject {
   /// [MessagePremiumGiftCode]
   /// [MessageProximityAlertTriggered]
   /// [MessageRefundedUpgradedGift]
+  /// [MessageRichMessage]
   /// [MessageScreenshotTaken]
   /// [MessageStakeDice]
   /// [MessageSticker]
@@ -140,6 +145,9 @@ sealed class MessageContent extends TdObject {
       case MessageChatAddMembers.constructor:
         return MessageChatAddMembers.fromJson(json);
 
+      case MessageChatAddedToCommunity.constructor:
+        return MessageChatAddedToCommunity.fromJson(json);
+
       case MessageChatBoost.constructor:
         return MessageChatBoost.fromJson(json);
 
@@ -172,6 +180,9 @@ sealed class MessageContent extends TdObject {
 
       case MessageChatOwnerLeft.constructor:
         return MessageChatOwnerLeft.fromJson(json);
+
+      case MessageChatRemovedFromCommunity.constructor:
+        return MessageChatRemovedFromCommunity.fromJson(json);
 
       case MessageChatSetBackground.constructor:
         return MessageChatSetBackground.fromJson(json);
@@ -284,6 +295,9 @@ sealed class MessageContent extends TdObject {
       case MessageInvoice.constructor:
         return MessageInvoice.fromJson(json);
 
+      case MessageLiveLocation.constructor:
+        return MessageLiveLocation.fromJson(json);
+
       case MessageLocation.constructor:
         return MessageLocation.fromJson(json);
 
@@ -337,6 +351,9 @@ sealed class MessageContent extends TdObject {
 
       case MessageRefundedUpgradedGift.constructor:
         return MessageRefundedUpgradedGift.fromJson(json);
+
+      case MessageRichMessage.constructor:
+        return MessageRichMessage.fromJson(json);
 
       case MessageScreenshotTaken.constructor:
         return MessageScreenshotTaken.fromJson(json);
@@ -765,6 +782,42 @@ final class MessageChatAddMembers extends MessageContent {
   int get hashCode => overriddenHashCode;
 }
 
+/// The chat was added to a community
+@immutable
+final class MessageChatAddedToCommunity extends MessageContent {
+  MessageChatAddedToCommunity({required this.communityId});
+
+  /// [communityId] Identifier of the community to which the chat was added
+  final int communityId;
+
+  static const String constructor = 'messageChatAddedToCommunity';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'community_id': communityId,
+    '@type': constructor,
+  };
+
+  static MessageChatAddedToCommunity? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return MessageChatAddedToCommunity(
+      communityId: (json['community_id'] as int?) ?? 0,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// The chat was boosted by the sender of the message
 @immutable
 final class MessageChatBoost extends MessageContent {
@@ -1147,6 +1200,34 @@ final class MessageChatOwnerLeft extends MessageContent {
     return MessageChatOwnerLeft(
       newOwnerUserId: (json['new_owner_user_id'] as int?) ?? 0,
     );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// The chat was removed from a community
+@immutable
+final class MessageChatRemovedFromCommunity extends MessageContent {
+  const MessageChatRemovedFromCommunity();
+
+  static const String constructor = 'messageChatRemovedFromCommunity';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{'@type': constructor};
+
+  static MessageChatRemovedFromCommunity? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return const MessageChatRemovedFromCommunity();
   }
 
   @override
@@ -2563,30 +2644,30 @@ final class MessageGiftedStars extends MessageContent {
   int get hashCode => overriddenHashCode;
 }
 
-/// Toncoins were gifted to a user
+/// TON Grams were gifted to a user
 @immutable
 final class MessageGiftedTon extends MessageContent {
   MessageGiftedTon({
     required this.gifterUserId,
     required this.receiverUserId,
-    required this.tonAmount,
+    required this.gramAmount,
     required this.transactionId,
     this.sticker,
   });
 
-  /// [gifterUserId] The identifier of a user who gifted Toncoins; 0 if the gift
+  /// [gifterUserId] The identifier of a user who gifted Grams; 0 if the gift
   /// was anonymous or is outgoing
   final int gifterUserId;
 
-  /// [receiverUserId] The identifier of a user who received Toncoins; 0 if the
+  /// [receiverUserId] The identifier of a user who received Grams; 0 if the
   /// gift is incoming
   final int receiverUserId;
 
-  /// [tonAmount] The received Toncoin amount, in the smallest units of the
+  /// [gramAmount] The received Gram amount, in the smallest units of the
   /// cryptocurrency
-  final int tonAmount;
+  final int gramAmount;
 
-  /// [transactionId] Identifier of the transaction for Toncoin credit; for
+  /// [transactionId] Identifier of the transaction for Gram credit; for
   /// receiver only
   final String transactionId;
 
@@ -2602,7 +2683,7 @@ final class MessageGiftedTon extends MessageContent {
   Map<String, dynamic> toJson() => <String, dynamic>{
     'gifter_user_id': gifterUserId,
     'receiver_user_id': receiverUserId,
-    'ton_amount': tonAmount,
+    'gram_amount': gramAmount,
     'transaction_id': transactionId,
     'sticker': sticker?.toJson(),
     '@type': constructor,
@@ -2616,7 +2697,7 @@ final class MessageGiftedTon extends MessageContent {
     return MessageGiftedTon(
       gifterUserId: (json['gifter_user_id'] as int?) ?? 0,
       receiverUserId: (json['receiver_user_id'] as int?) ?? 0,
-      tonAmount: (json['ton_amount'] as int?) ?? 0,
+      gramAmount: (json['gram_amount'] as int?) ?? 0,
       transactionId: (json['transaction_id'] as String?) ?? '',
       sticker: Sticker.fromJson(tdMapFromJson(json['sticker'])),
     );
@@ -2784,7 +2865,7 @@ final class MessageGiveawayCreated extends MessageContent {
   int get hashCode => overriddenHashCode;
 }
 
-/// A Telegram Stars were received by the current user from a giveaway
+/// Telegram Stars were received by the current user from a giveaway
 @immutable
 final class MessageGiveawayPrizeStars extends MessageContent {
   MessageGiveawayPrizeStars({
@@ -3189,38 +3270,56 @@ final class MessageInvoice extends MessageContent {
   int get hashCode => overriddenHashCode;
 }
 
-/// A message with a location
+/// A message with a live location
 @immutable
-final class MessageLocation extends MessageContent {
-  MessageLocation({
-    this.location,
-    required this.livePeriod,
-    required this.expiresIn,
-    required this.heading,
-    required this.proximityAlertRadius,
-  });
+final class MessageLiveLocation extends MessageContent {
+  MessageLiveLocation({this.location, required this.expiresIn});
 
-  /// [location] The location description
-  final Location? location;
-
-  /// [livePeriod] Time relative to the message send date, for which the
-  /// location can be updated, in seconds; if 0x7FFFFFFF, then location can be
-  /// updated forever
-  final int livePeriod;
+  /// [location] The current location
+  final LiveLocation? location;
 
   /// [expiresIn] Left time for which the location can be updated, in seconds.
   /// If 0, then the location can't be updated anymore. The update
   /// updateMessageContent is not sent when this field changes
   final int expiresIn;
 
-  /// [heading] For live locations, a direction in which the location moves, in
-  /// degrees; 1-360. If 0 the direction is unknown
-  final int heading;
+  static const String constructor = 'messageLiveLocation';
 
-  /// [proximityAlertRadius] For live locations, a maximum distance to another
-  /// chat member for proximity alerts, in meters (0-100000). 0 if the
-  /// notification is disabled. Available only to the message sender
-  final int proximityAlertRadius;
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'location': location?.toJson(),
+    'expires_in': expiresIn,
+    '@type': constructor,
+  };
+
+  static MessageLiveLocation? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return MessageLiveLocation(
+      location: LiveLocation.fromJson(tdMapFromJson(json['location'])),
+      expiresIn: (json['expires_in'] as int?) ?? 0,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
+/// A message with a location
+@immutable
+final class MessageLocation extends MessageContent {
+  MessageLocation({this.location});
+
+  /// [location] The location
+  final Location? location;
 
   static const String constructor = 'messageLocation';
 
@@ -3230,10 +3329,6 @@ final class MessageLocation extends MessageContent {
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{
     'location': location?.toJson(),
-    'live_period': livePeriod,
-    'expires_in': expiresIn,
-    'heading': heading,
-    'proximity_alert_radius': proximityAlertRadius,
     '@type': constructor,
   };
 
@@ -3244,10 +3339,6 @@ final class MessageLocation extends MessageContent {
 
     return MessageLocation(
       location: Location.fromJson(tdMapFromJson(json['location'])),
-      livePeriod: (json['live_period'] as int?) ?? 0,
-      expiresIn: (json['expires_in'] as int?) ?? 0,
-      heading: (json['heading'] as int?) ?? 0,
-      proximityAlertRadius: (json['proximity_alert_radius'] as int?) ?? 0,
     );
   }
 
@@ -3905,10 +3996,10 @@ final class MessagePoll extends MessageContent {
   final FormattedText? description;
 
   /// [media] Media attached to the poll; may be null if none. If present,
-  /// currently, can be only of the types messageAnimation, messageAudio,
-  /// messageDocument, messageLocation, messagePhoto, messageVenue, or
-  /// messageVideo without caption
-  final MessageContent? media;
+  /// currently, can be only of the types pollMediaAnimation, pollMediaAudio,
+  /// pollMediaDocument, pollMediaLocation, pollMediaPhoto, pollMediaVenue, or
+  /// pollMediaVideo
+  final PollMedia? media;
 
   /// [canAddOption] True, if an option can be added to the poll using
   /// addPollOption
@@ -3936,7 +4027,7 @@ final class MessagePoll extends MessageContent {
     return MessagePoll(
       poll: Poll.fromJson(tdMapFromJson(json['poll'])),
       description: FormattedText.fromJson(tdMapFromJson(json['description'])),
-      media: MessageContent.fromJson(tdMapFromJson(json['media'])),
+      media: PollMedia.fromJson(tdMapFromJson(json['media'])),
       canAddOption: (json['can_add_option'] as bool?) ?? false,
     );
   }
@@ -4275,6 +4366,43 @@ final class MessageRefundedUpgradedGift extends MessageContent {
   int get hashCode => overriddenHashCode;
 }
 
+/// A rich message; the message can have multiple media of the same type, all
+/// of which must be shown in the corresponding profile tab
+@immutable
+final class MessageRichMessage extends MessageContent {
+  MessageRichMessage({this.message});
+
+  /// [message] The rich message
+  final RichMessage? message;
+
+  static const String constructor = 'messageRichMessage';
+
+  @override
+  String getConstructor() => constructor;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'message': message?.toJson(),
+    '@type': constructor,
+  };
+
+  static MessageRichMessage? fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return null;
+    }
+
+    return MessageRichMessage(
+      message: RichMessage.fromJson(tdMapFromJson(json['message'])),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) => overriddenEquality(other);
+
+  @override
+  int get hashCode => overriddenHashCode;
+}
+
 /// A screenshot of a message in the chat has been taken
 @immutable
 final class MessageScreenshotTaken extends MessageContent {
@@ -4310,8 +4438,8 @@ final class MessageStakeDice extends MessageContent {
     this.initialState,
     this.finalState,
     required this.value,
-    required this.stakeToncoinAmount,
-    required this.prizeToncoinAmount,
+    required this.stakeGramAmount,
+    required this.prizeGramAmount,
   });
 
   /// [initialState] The animated stickers with the initial dice animation; may
@@ -4328,14 +4456,14 @@ final class MessageStakeDice extends MessageContent {
   /// state yet
   final int value;
 
-  /// [stakeToncoinAmount] The Toncoin amount that was staked; in the smallest
+  /// [stakeGramAmount] The TON Gram amount that was staked; in the smallest
   /// units of the currency
-  final int stakeToncoinAmount;
+  final int stakeGramAmount;
 
-  /// [prizeToncoinAmount] The Toncoin amount that was gained from the roll; in
+  /// [prizeGramAmount] The TON Gram amount that was gained from the roll; in
   /// the smallest units of the currency; -1 if the dice don't have final state
   /// yet
-  final int prizeToncoinAmount;
+  final int prizeGramAmount;
 
   static const String constructor = 'messageStakeDice';
 
@@ -4347,8 +4475,8 @@ final class MessageStakeDice extends MessageContent {
     'initial_state': initialState?.toJson(),
     'final_state': finalState?.toJson(),
     'value': value,
-    'stake_toncoin_amount': stakeToncoinAmount,
-    'prize_toncoin_amount': prizeToncoinAmount,
+    'stake_gram_amount': stakeGramAmount,
+    'prize_gram_amount': prizeGramAmount,
     '@type': constructor,
   };
 
@@ -4361,8 +4489,8 @@ final class MessageStakeDice extends MessageContent {
       initialState: DiceStickers.fromJson(tdMapFromJson(json['initial_state'])),
       finalState: DiceStickers.fromJson(tdMapFromJson(json['final_state'])),
       value: (json['value'] as int?) ?? 0,
-      stakeToncoinAmount: (json['stake_toncoin_amount'] as int?) ?? 0,
-      prizeToncoinAmount: (json['prize_toncoin_amount'] as int?) ?? 0,
+      stakeGramAmount: (json['stake_gram_amount'] as int?) ?? 0,
+      prizeGramAmount: (json['prize_gram_amount'] as int?) ?? 0,
     );
   }
 
@@ -4539,8 +4667,8 @@ final class MessageSuggestProfilePhoto extends MessageContent {
   int get hashCode => overriddenHashCode;
 }
 
-/// Approval of suggested post has failed, because the user which proposed the
-/// post had no enough funds
+/// Approval of suggested post has failed, because the user who proposed the
+/// post didn't have enough funds
 @immutable
 final class MessageSuggestedPostApprovalFailed extends MessageContent {
   MessageSuggestedPostApprovalFailed({
@@ -4693,7 +4821,7 @@ final class MessageSuggestedPostPaid extends MessageContent {
   MessageSuggestedPostPaid({
     required this.suggestedPostMessageId,
     this.starAmount,
-    required this.tonAmount,
+    required this.gramAmount,
   });
 
   /// [suggestedPostMessageId] Identifier of the message with the suggested
@@ -4703,9 +4831,9 @@ final class MessageSuggestedPostPaid extends MessageContent {
   /// [starAmount] The amount of received Telegram Stars
   final StarAmount? starAmount;
 
-  /// [tonAmount] The amount of received Toncoins; in the smallest units of the
-  /// cryptocurrency
-  final int tonAmount;
+  /// [gramAmount] The amount of received TON Grams; in the smallest units of
+  /// the cryptocurrency
+  final int gramAmount;
 
   static const String constructor = 'messageSuggestedPostPaid';
 
@@ -4716,7 +4844,7 @@ final class MessageSuggestedPostPaid extends MessageContent {
   Map<String, dynamic> toJson() => <String, dynamic>{
     'suggested_post_message_id': suggestedPostMessageId,
     'star_amount': starAmount?.toJson(),
-    'ton_amount': tonAmount,
+    'gram_amount': gramAmount,
     '@type': constructor,
   };
 
@@ -4728,7 +4856,7 @@ final class MessageSuggestedPostPaid extends MessageContent {
     return MessageSuggestedPostPaid(
       suggestedPostMessageId: (json['suggested_post_message_id'] as int?) ?? 0,
       starAmount: StarAmount.fromJson(tdMapFromJson(json['star_amount'])),
-      tonAmount: (json['ton_amount'] as int?) ?? 0,
+      gramAmount: (json['gram_amount'] as int?) ?? 0,
     );
   }
 
@@ -4970,7 +5098,7 @@ final class MessageUpgradedGift extends MessageContent {
   final int exportDate;
 
   /// [craftDate] Point in time (Unix timestamp) when the gift can be used to
-  /// craft another gift can be in the past; only for the receiver of the gift
+  /// craft another gift; can be in the past; only for the receiver of the gift
   final int craftDate;
 
   static const String constructor = 'messageUpgradedGift';

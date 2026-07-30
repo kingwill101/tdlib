@@ -1,17 +1,26 @@
 import 'package:meta/meta.dart';
+
 import '../extensions/data_class_extensions.dart';
 import '../tdapi.dart';
 
 /// Represents a command supported by a bot
 @immutable
 final class BotCommand extends TdObject {
-  BotCommand({required this.command, required this.description});
+  BotCommand({
+    required this.command,
+    required this.description,
+    required this.isEphemeral,
+  });
 
   /// [command] Text of the bot command
   final String command;
 
   /// param_[description] Description of the bot command
   final String description;
+
+  /// [isEphemeral] True, if the command must send an ephemeral message instead
+  /// of a regular one
+  final bool isEphemeral;
 
   static const String constructor = 'botCommand';
 
@@ -22,6 +31,7 @@ final class BotCommand extends TdObject {
   Map<String, dynamic> toJson() => <String, dynamic>{
     'command': command,
     'description': description,
+    'is_ephemeral': isEphemeral,
     '@type': constructor,
   };
 
@@ -33,6 +43,7 @@ final class BotCommand extends TdObject {
     return BotCommand(
       command: (json['command'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
+      isEphemeral: (json['is_ephemeral'] as bool?) ?? false,
     );
   }
 
