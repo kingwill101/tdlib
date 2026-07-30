@@ -120,6 +120,8 @@ dart run native_prebuilt manifest update \
 
 The command auto-finds `native_prebuilt.yaml`, writes `lib/src/hook/tdlib_prebuilts.g.dart`, and uses the sibling `built-library/` directory when TDLib build recipes are present. The build hook consumes that checked-in manifest so release hashes and runtime verification stay aligned.
 
+The native asset is consumed by `lib/src/client/platform/io/tdjson_native.dart`, which uses `@Native` bindings rather than `DynamicLibrary.open()`.
+
 Run the `Prebuilt` workflow manually for a release tag after the manifest commit lands on `main`; it now takes the release tag as a workflow-dispatch input instead of rebuilding from a pushed tag.
 
 The recipe file uses Liquid templates for paths and environment values, for example:
