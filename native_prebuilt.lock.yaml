@@ -19,8 +19,8 @@ artifacts:
     archive_sha256: '79188af42ce7b2bb9346cc33b4c2767be3bb936c20a057ad955fec5ffd67d2eb'
     payload_sha256: '71ed9e7d8a00a0f537facbc315b642ce437e9301b524ef336cc7f0c4bc4aace6'
   'windows-x64':
-    archive_sha256: '00b120aabd6648954139043693b6fa03944b17b587ca7ddc065f130f2eae7d5c'
-    payload_sha256: 'bf04fdd2f56a6bb73b22ce7c8f42c0c3c313ef6944adec8ef048c70c4087cbfb'
+    archive_sha256: '41e2d23813cb6188273c477882d57bdad1f25c4879f2e17fa3411370fce9bba1'
+    payload_sha256: 'a1adb552b66984a843657c8b0f533820174a63179ed2608bb96229805a9c3663'
   'macos-arm64':
     archive_sha256: '43997e2d3f03e8e5d04907a080acc528a4afe5471640e03b65c21fdc821dcbf4'
     payload_sha256: '6309bd1bde7dc21be7beed91f04a85b25ee09600da8d3c4c491fd409a7b3a654'
