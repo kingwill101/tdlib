@@ -17,7 +17,7 @@ permissions:
 
 env:
   CONFIG: native_prebuilt.yaml
-  MANIFEST_OUTPUT: lib/src/hook/tdlib_prebuilts.g.dart
+  MANIFEST_OUTPUT: native_prebuilt.lock.yaml
 
 jobs:
   build:

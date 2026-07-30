@@ -23,5 +23,11 @@ void main() {
       File('lib/src/client/platform/io/tdjson_native.dart').existsSync(),
       isTrue,
     );
+
+    expect(File('native_prebuilt.lock.yaml').existsSync(), isTrue);
+    expect(
+      File('native_prebuilt.lock.yaml').readAsStringSync(),
+      contains("tag: 'tdlib-v1.8.64'"),
+    );
   });
 }
