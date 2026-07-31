@@ -6,7 +6,7 @@ import 'class.dart';
 class DataClassExtensionsGenerator {
   String generate(List<Class> classes) {
     final List<String> output = <String>[
-      "import 'package:tdlib/td_api.dart';",
+      "import 'package:tdlib2/td_api.dart';",
       "import 'package:collection/collection.dart';",
       '',
       "Iterable<dynamic> tdListFromJson(Object? raw) {",

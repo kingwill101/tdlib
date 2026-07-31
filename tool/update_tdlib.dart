@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:http/http.dart' as http;
-import 'package:tdlib/src/generator/build_config.dart';
-import 'package:tdlib/src/tdlib_source.dart';
+import 'package:tdlib2/src/generator/build_config.dart';
+import 'package:tdlib2/src/tdlib_source.dart';
 
 const _defaultSchemaPath = 'tool/schema/td_api.tl';
 

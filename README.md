@@ -1,4 +1,4 @@
-# tdlib
+# tdlib2
 
 Dart bindings for [TDLib](https://github.com/tdlib/td) with native prebuilts and source-build fallback.
 
@@ -34,19 +34,15 @@ The packages were combined here and rewritten in some areas.
 
 ```yaml
 dependencies:
-  tdlib:
-    git:
-      url: https://github.com/<owner>/tdlib.git
-      ref: main
+  tdlib2: ^1.8.64
 ```
 
-If you publish to pub.dev later, you can switch to a normal versioned dependency.
 
 ## Quick start
 
 ```dart
-import 'package:tdlib/td_api.dart' as td;
-import 'package:tdlib/td_client.dart';
+import 'package:tdlib2/td_api.dart' as td;
+import 'package:tdlib2/td_client.dart';
 
 Future<void> main() async {
   final client = Client.create();
@@ -89,7 +85,7 @@ To force a source build instead of using the packaged prebuilt, add this to the 
 ```yaml
 hooks:
   user_defines:
-    tdlib:
+    tdlib2:
       build_from_source: true
 ```
 

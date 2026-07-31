@@ -2,7 +2,7 @@
 # This file is the source of truth for TDLib build recipes.
 
 schema: 1
-package: tdlib
+package: tdlib2
 asset_name: src/client/platform/io/tdjson_native.dart
 library_stem: tdjson
 link_mode: dynamic_library

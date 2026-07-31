@@ -8,7 +8,7 @@ targets:
 
 builders:
   td_api:
-    import: "package:tdlib/builder.dart"
+    import: "package:tdlib2/builder.dart"
     builder_factories: ["tdApiBuilder"]
     build_extensions:
       "^tool/schema/td_api.tl":

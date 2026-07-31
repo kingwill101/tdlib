@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:test/test.dart';
-import 'package:tdlib/src/generator/class.dart';
-import 'package:tdlib/src/generator/generator.dart';
-import 'package:tdlib/src/generator/parser.dart';
+import 'package:tdlib2/src/generator/class.dart';
+import 'package:tdlib2/src/generator/generator.dart';
+import 'package:tdlib2/src/generator/parser.dart';
 
 void main() {
   late Directory tmpOutput;

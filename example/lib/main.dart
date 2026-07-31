@@ -1,5 +1,5 @@
-import 'package:tdlib/td_api.dart' as td;
-import 'package:tdlib/td_client.dart';
+import 'package:tdlib2/td_api.dart' as td;
+import 'package:tdlib2/td_client.dart';
 
 Future<void> main() async {
   final client = Client.create();

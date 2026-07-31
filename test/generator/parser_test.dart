@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
-import 'package:tdlib/src/generator/class.dart';
-import 'package:tdlib/src/generator/group.dart';
-import 'package:tdlib/src/generator/parser.dart';
+import 'package:tdlib2/src/generator/class.dart';
+import 'package:tdlib2/src/generator/group.dart';
+import 'package:tdlib2/src/generator/parser.dart';
 
 void main() {
   group('Parser', () {

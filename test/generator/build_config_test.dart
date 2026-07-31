@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:tdlib/src/generator/build_config.dart';
-import 'package:tdlib/src/generator/generator.dart';
-import 'package:tdlib/src/generator/parser.dart';
+import 'package:tdlib2/src/generator/build_config.dart';
+import 'package:tdlib2/src/generator/generator.dart';
+import 'package:tdlib2/src/generator/parser.dart';
 import 'package:test/test.dart';
 
 void main() {

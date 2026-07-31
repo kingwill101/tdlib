@@ -1,4 +1,4 @@
-import 'package:tdlib/td_api.dart';
+import 'package:tdlib2/td_api.dart';
 import 'package:test/test.dart';
 
 void main() {

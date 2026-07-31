@@ -1,7 +1,7 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
 
-import 'package:tdlib/src/client/platform/io/tdjson_native.dart' as native;
+import 'package:tdlib2/src/client/platform/io/tdjson_native.dart' as native;
 import 'package:test/test.dart';
 
 void main() {

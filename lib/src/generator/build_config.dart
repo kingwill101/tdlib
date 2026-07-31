@@ -20,7 +20,7 @@ void writeBuildConfig({
     ..writeln()
     ..writeln('builders:')
     ..writeln('  td_api:')
-    ..writeln('    import: "package:tdlib/builder.dart"')
+    ..writeln('    import: "package:tdlib2/builder.dart"')
     ..writeln('    builder_factories: ["tdApiBuilder"]')
     ..writeln('    build_extensions:')
     ..writeln('      "^$schemaPath":');

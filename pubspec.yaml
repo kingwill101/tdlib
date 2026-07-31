@@ -1,4 +1,9 @@
-name: tdlib
+name: tdlib2
+version: 1.8.64
+description: Dart bindings for TDLib with native prebuilts and source-build fallback.
+repository: https://github.com/kingwill101/tdlib
+homepage: https://github.com/kingwill101/tdlib
+issue_tracker: https://github.com/kingwill101/tdlib/issues
 environment:
   sdk: ">=3.12.0 <4.0.0"
 

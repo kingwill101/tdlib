@@ -13,7 +13,7 @@ void main() {
       final inputBuilder = BuildInputBuilder()
         ..setupShared(
           packageRoot: root.uri,
-          packageName: 'tdlib',
+          packageName: 'tdlib2',
           outputFile: root.uri.resolve('output.json'),
           outputDirectoryShared: root.uri.resolve('shared/'),
         )
@@ -39,7 +39,7 @@ void main() {
       final inputBuilder = BuildInputBuilder()
         ..setupShared(
           packageRoot: root.uri,
-          packageName: 'tdlib',
+          packageName: 'tdlib2',
           outputFile: root.uri.resolve('output.json'),
           outputDirectoryShared: root.uri.resolve('shared/'),
           userDefines: PackageUserDefines(

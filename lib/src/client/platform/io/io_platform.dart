@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:ffi' as ffi;
 
 import 'package:rxdart/rxdart.dart';
-import 'package:tdlib/td_api.dart';
+import 'package:tdlib2/td_api.dart';
 
 import '../../td_error.dart' as client_error;
 import '../platform.dart';

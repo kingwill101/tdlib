@@ -242,7 +242,7 @@ class Generator {
     if (extensionsFile.existsSync()) extensionsFile.deleteSync(recursive: true);
     extensionsFile.createSync(recursive: true);
 
-    final lines = <String>["import 'package:tdlib/td_api.dart';"];
+    final lines = <String>["import 'package:tdlib2/td_api.dart';"];
 
     // Extensions for sealed parents (map, maybeMap)
     for (final entry in hierarchies.entries) {
@@ -284,7 +284,7 @@ class Generator {
     convertExtensionFile.createSync(recursive: true);
 
     final lines = <String>[
-      "import 'package:tdlib/td_api.dart';",
+      "import 'package:tdlib2/td_api.dart';",
       '',
       'extension ConvertExtensions on Map<String, dynamic> {',
       'TdObject? toTdObject() {',
