@@ -109,6 +109,24 @@ build:
           type: cmake_build
           build_directory: "{{ work }}/build-native"
 
+        - &android_openssl_step
+          id: build_openssl
+          type: command
+          commands:
+            - - rm
+              - -rf
+              - "{{ work }}/openssl"
+
+            - - bash
+              - "{{ source.path }}/example/android/build-openssl.sh"
+              - "{{ env.ANDROID_SDK_ROOT }}"
+              - "{{ env.ANDROID_NDK_VERSION }}"
+              - "{{ work }}/openssl"
+              - OpenSSL_1_1_1w
+          working_directory: "{{ source.path }}/example/android"
+          needs:
+            - build_source
+
         - id: configure_tdlib
           type: cmake_configure
           source_directory: "{{ source.path }}/example/android"
@@ -120,7 +138,10 @@ build:
             ANDROID_ABI: armeabi-v7a
             ANDROID_STL: c++_static
             ANDROID_PLATFORM: android-24
+            OPENSSL_ROOT_DIR: "{{ work }}/openssl/armeabi-v7a"
             TD_ANDROID_JSON: ON
+          needs:
+            - build_openssl
 
         - &android_tdlib_build_step
           id: build_tdlib
@@ -148,6 +169,7 @@ build:
       steps:
         - *android_source_config_step
         - *android_source_build_step
+        - *android_openssl_step
 
         - id: configure_tdlib
           type: cmake_configure
@@ -160,7 +182,10 @@ build:
             ANDROID_ABI: arm64-v8a
             ANDROID_STL: c++_static
             ANDROID_PLATFORM: android-24
+            OPENSSL_ROOT_DIR: "{{ work }}/openssl/arm64-v8a"
             TD_ANDROID_JSON: ON
+          needs:
+            - build_openssl
 
         - *android_tdlib_build_step
         - *android_strip_step
@@ -172,6 +197,7 @@ build:
       steps:
         - *android_source_config_step
         - *android_source_build_step
+        - *android_openssl_step
 
         - id: configure_tdlib
           type: cmake_configure
@@ -184,7 +210,10 @@ build:
             ANDROID_ABI: x86_64
             ANDROID_STL: c++_static
             ANDROID_PLATFORM: android-24
+            OPENSSL_ROOT_DIR: "{{ work }}/openssl/x86_64"
             TD_ANDROID_JSON: ON
+          needs:
+            - build_openssl
 
         - *android_tdlib_build_step
         - *android_strip_step
@@ -196,6 +225,7 @@ build:
       steps:
         - *android_source_config_step
         - *android_source_build_step
+        - *android_openssl_step
 
         - id: configure_tdlib
           type: cmake_configure
@@ -208,7 +238,10 @@ build:
             ANDROID_ABI: x86
             ANDROID_STL: c++_static
             ANDROID_PLATFORM: android-24
+            OPENSSL_ROOT_DIR: "{{ work }}/openssl/x86"
             TD_ANDROID_JSON: ON
+          needs:
+            - build_openssl
 
         - *android_tdlib_build_step
         - *android_strip_step

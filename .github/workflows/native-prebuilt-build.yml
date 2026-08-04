@@ -86,7 +86,10 @@ jobs:
           fi
 
           echo "ANDROID_NDK_HOME=$NDK_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_VERSION=$(basename "$NDK_HOME")" >> "$GITHUB_ENV"
+
           echo "Using Android NDK: $NDK_HOME"
+          echo "Android NDK version: $(basename "$NDK_HOME")"
 
       - name: Install native tools (macOS)
         if: inputs.runner == 'macos-15'
@@ -250,7 +253,7 @@ jobs:
         run: "${SCCACHE_PATH} --show-stats"
 
       - uses: actions/upload-artifact@v7
-        if: always()
+        if: success()
         with:
           name: ${{ inputs.artifact-name }}
           path: built-library/${{ inputs.target }}/
