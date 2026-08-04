@@ -56,14 +56,17 @@ jobs:
       artifact-name: ${{ matrix.artifact_name }}
 
   update-manifest:
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch'
     needs:
       - build
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    concurrency:
+      group: tdlib-release-manifest
+      cancel-in-progress: false
+    outputs:
+      manifest_commit: ${{ steps.commit_manifest.outputs.sha }}
 
     steps:
       - uses: actions/checkout@v4
@@ -128,36 +131,46 @@ jobs:
 
       - name: Generate manifest and release assets
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG="${{ github.event.inputs.tag }}"
-            dart run native_prebuilt manifest update \
-              --config "$CONFIG" \
-              --output "$MANIFEST_OUTPUT" \
-              --built-library-dir built-library \
-              --release-assets-dir release-assets \
-              --tag "$TAG"
-          else
-            dart run native_prebuilt manifest update \
-              --config "$CONFIG" \
-              --output "$MANIFEST_OUTPUT" \
-              --built-library-dir built-library \
-              --release-assets-dir release-assets
-          fi
+          TAG="${{ github.event.inputs.tag }}"
+          dart run native_prebuilt manifest update \
+            --config "$CONFIG" \
+            --output "$MANIFEST_OUTPUT" \
+            --built-library-dir built-library \
+            --release-assets-dir release-assets \
+            --tag "$TAG"
 
       - name: Commit generated manifest
-        if: github.ref == 'refs/heads/main'
+        id: commit_manifest
         run: |
-          if git diff --quiet -- "$MANIFEST_OUTPUT"; then
-            echo "No manifest changes to commit."
-            exit 0
+          git fetch origin main
+
+          REMOTE_SHA="$(git rev-parse origin/main)"
+          if [ "$REMOTE_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::main moved while release artifacts were being built."
+            echo "::error::built from: $GITHUB_SHA"
+            echo "::error::current main: $REMOTE_SHA"
+            echo "::error::Re-run the release from the current main branch."
+            exit 1
           fi
 
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet -- "$MANIFEST_OUTPUT"; then
+            echo "No manifest changes to commit."
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           git add "$MANIFEST_OUTPUT"
-          git commit -m "chore: refresh tdlib prebuilts manifest [skip ci]"
-          git pull --rebase origin main
+          git commit -m \
+            "chore: release ${{ github.event.inputs.tag }} prebuilts [skip ci]"
+
+          COMMIT_SHA="$(git rev-parse HEAD)"
           git push origin HEAD:main
+
+          echo "sha=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -176,6 +189,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.update-manifest.outputs.manifest_commit }}
 
       - uses: actions/download-artifact@v7
         with:
@@ -186,5 +201,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag }}
+          target_commitish: ${{ needs.update-manifest.outputs.manifest_commit }}
           fail_on_unmatched_files: true
           files: release-assets/*
