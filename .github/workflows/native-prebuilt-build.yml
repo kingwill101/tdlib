@@ -54,6 +54,40 @@ jobs:
             ninja-build \
             pkg-config
 
+      - name: Resolve Android NDK
+        if: startsWith(inputs.target, 'android-')
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          NDK_HOME="${ANDROID_NDK_HOME:-${ANDROID_NDK_LATEST_HOME:-}}"
+
+          if [ -z "$NDK_HOME" ]; then
+            if [ -n "$ANDROID_SDK_ROOT" ]; then
+              NDK_HOME="$(
+                find "$ANDROID_SDK_ROOT/ndk" \
+                  -mindepth 1 \
+                  -maxdepth 1 \
+                  -type d \
+                | sort -V \
+                | tail -1
+              )"
+            fi
+          fi
+
+          if [ -z "$NDK_HOME" ]; then
+            echo "Error: ANDROID_NDK_HOME is not set and no NDK found" >&2
+            exit 1
+          fi
+
+          if [ ! -f "$NDK_HOME/build/cmake/android.toolchain.cmake" ]; then
+            echo "Error: android.toolchain.cmake not found in $NDK_HOME" >&2
+            exit 1
+          fi
+
+          echo "ANDROID_NDK_HOME=$NDK_HOME" >> "$GITHUB_ENV"
+          echo "Using Android NDK: $NDK_HOME"
+
       - name: Install native tools (macOS)
         if: inputs.runner == 'macos-15'
         run: brew install gperf ninja
@@ -141,6 +175,70 @@ jobs:
         env:
           TARGET: ${{ inputs.target }}
         run: dart run native_prebuilt build --target "$TARGET" --output built-library --from-source
+
+      - name: Verify Android binary architecture
+        if: startsWith(inputs.target, 'android-')
+        shell: bash
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          set -euo pipefail
+
+          LIB="built-library/$TARGET/libtdjson.so"
+
+          if [ ! -f "$LIB" ]; then
+            echo "Error: Built library not found: $LIB" >&2
+            exit 1
+          fi
+
+          echo "=== Verifying architecture for $TARGET ==="
+          file "$LIB"
+
+          # Use readelf to check the ELF machine type
+          if ! command -v readelf &>/dev/null; then
+            echo "readelf not found, skipping verification"
+            exit 0
+          fi
+
+          MACHINE="$(readelf -h "$LIB" 2>/dev/null | awk -F: '/Machine:/ {
+            gsub(/^[ \t]+/, "", $2)
+            print $2
+          }')"
+
+          echo "Detected machine: $MACHINE"
+
+          case "$TARGET" in
+            android-arm64)
+              if ! echo "$MACHINE" | grep -qi 'AArch64'; then
+                echo "ERROR: Expected AArch64 for android-arm64, got: $MACHINE" >&2
+                exit 1
+              fi
+              ;;
+            android-arm)
+              if ! echo "$MACHINE" | grep -qi 'ARM'; then
+                echo "ERROR: Expected ARM for android-arm, got: $MACHINE" >&2
+                exit 1
+              fi
+              ;;
+            android-x64)
+              if ! echo "$MACHINE" | grep -qi 'X86-64'; then
+                echo "ERROR: Expected X86-64 for android-x64, got: $MACHINE" >&2
+                exit 1
+              fi
+              ;;
+            android-ia32)
+              if ! echo "$MACHINE" | grep -Eqi 'Intel 80386|80386'; then
+                echo "ERROR: Expected IA-32 for android-ia32, got: $MACHINE" >&2
+                exit 1
+              fi
+              ;;
+            *)
+              echo "Unknown Android target: $TARGET" >&2
+              exit 1
+              ;;
+          esac
+
+          echo "Architecture verification passed for $TARGET"
 
       - name: Show compiler cache statistics (Windows)
         if: always() && inputs.runner == 'windows-latest'
