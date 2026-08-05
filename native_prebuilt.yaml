@@ -15,7 +15,7 @@ source:
 release:
   provider: github
   repository: kingwill101/tdlib
-  tag: tdlib-v1.8.64
+  tag: tdlib-v1.8.65
 
 build:
   recipes:

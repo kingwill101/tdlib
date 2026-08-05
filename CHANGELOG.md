@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.65
+
+- fix: Resolve incorrect abi naming that caused native assets to resolve the incorrect dynamic libraries
+-`native_prebuilt` 0.4.0.
+
 ## 1.8.64
 
 - Rename the published package to `tdlib2` for pub.dev.
